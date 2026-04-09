@@ -98,15 +98,25 @@ function clearCanvas() {
 }
 
 function saveSignature() {
+
     const dataURL = canvas.toDataURL("image/png");
 
+    // Name generieren (Zeitstempel)
+    const timestamp = new Date().getTime();
+    const fileName = "signatur_" + timestamp + ".png";
+
+    // Download auslösen
     const link = document.createElement("a");
     link.href = dataURL;
-    link.download = "signatur.png";
+    link.download = fileName;
     link.click();
 
+    // Anzeige für Nutzer
     document.getElementById("result").innerHTML =
-        "✔ Unterschrift gespeichert (Download gestartet)";
+        "✔ Unterschrift gespeichert: " + fileName;
+
+    // Optional: Daten in URL übergeben (für Integration)
+    console.log("SIGNATUR_NAME=" + fileName);
 }
 </script>
 
