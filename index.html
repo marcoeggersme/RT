@@ -104,15 +104,12 @@ function saveSignature() {
     const timestamp = new Date().getTime();
     const fileName = "signatur_" + timestamp + ".png";
 
-    // Download starten
-    const link = document.createElement("a");
-    link.href = dataURL;
-    link.download = fileName;
-    link.click();
-
-    // WICHTIG: Dateiname sichtbar anzeigen
+    // Bild anzeigen statt direkt downloaden
     document.getElementById("result").innerHTML =
-        "<b>Dateiname:</b> " + fileName + "<br>Bitte diesen Wert ins Formular eintragen.";
+        "<b>Dateiname:</b> " + fileName + "<br><br>" +
+        "<img src='" + dataURL + "' width='300'><br><br>" +
+        "👉 Bild lange gedrückt halten und speichern<br>" +
+        "👉 Danach Dateiname ins Formular eintragen";
 }</script>
 
 </body>
