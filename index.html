@@ -100,16 +100,34 @@ function clearCanvas() {
 function saveSignature() {
 
     const dataURL = canvas.toDataURL("image/png");
-
     const timestamp = new Date().getTime();
     const fileName = "signatur_" + timestamp + ".png";
 
-    // Bild anzeigen statt direkt downloaden
-    document.getElementById("result").innerHTML =
-        "<b>Dateiname:</b> " + fileName + "<br><br>" +
-        "<img src='" + dataURL + "' width='300'><br><br>" +
-        "👉 Bild lange gedrückt halten und speichern<br>" +
-        "👉 Danach Dateiname ins Formular eintragen";
+    fetch("https://script.google.com/macros/s/AKfycbwJzRMx7LIV2KRtuV0nubaHlhySkLPh7Vvuxw_IxwBY8UmpuUsbEkmdiXOGQy8TQi00cQ/exec", {
+        method: "POST",
+        body: JSON.stringify({
+            image: dataURL,
+            fileName: fileName
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+
+        if (data.status === "ok") {
+            document.getElementById("result").innerHTML =
+                "<b>✔ Gespeichert!</b><br>" +
+                "<a href='" + data.url + "' target='_blank'>Signatur öffnen</a><br><br>" +
+                "👉 Diesen Link ins Formular eintragen";
+        } else {
+            document.getElementById("result").innerHTML =
+                "Fehler: " + data.message;
+        }
+
+    })
+    .catch(err => {
+        document.getElementById("result").innerHTML =
+            "Upload fehlgeschlagen";
+    });
 }</script>
 
 </body>
