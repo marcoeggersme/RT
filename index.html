@@ -31,6 +31,13 @@ button {
 
 <h2>Bitte unterschreiben</h2>
 
+<div id="infoBox" style="margin-bottom:15px; padding:10px; border:1px solid #ccc; border-radius:8px;">
+    <b>Datum:</b> <span id="datum"></span><br>
+    <b>Klient:</b> <span id="klient"></span><br>
+    <b>Leistung:</b> <span id="leistung"></span><br>
+    <b>Einheit:</b> <span id="einheit"></span>
+</div>
+    
 <canvas id="canvas" width="350" height="200"></canvas><br>
 
 <button onclick="clearCanvas()">Löschen</button>
@@ -40,6 +47,19 @@ button {
 
 <script>
 const canvas = document.getElementById("canvas");
+    // ===============================
+// URL-Parameter auslesen
+// ===============================
+function getParam(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name) || "";
+}
+
+// Werte setzen
+document.getElementById("datum").innerText = getParam("datum");
+document.getElementById("klient").innerText = getParam("klient");
+document.getElementById("leistung").innerText = getParam("leistung");
+document.getElementById("einheit").innerText = getParam("einheit");
 const ctx = canvas.getContext("2d");
 
 let drawing = false;
@@ -100,6 +120,7 @@ function clearCanvas() {
 function saveSignature() {
 
     const dataURL = canvas.toDataURL("image/png");
+
     const timestamp = new Date().getTime();
     const fileName = "signatur_" + timestamp + ".png";
 
@@ -114,10 +135,18 @@ function saveSignature() {
     .then(data => {
 
         if (data.status === "ok") {
-            document.getElementById("result").innerHTML =
-                "<b>✔ Gespeichert!</b><br>" +
-                "<a href='" + data.url + "' target='_blank'>Signatur öffnen</a><br><br>" +
-                "👉 Diesen Link ins Formular eintragen";
+
+            // 🔥 AUTOMATISCHER RÜCKGABE-LINK
+            const returnUrl = getParam("returnUrl");
+
+            if (returnUrl) {
+                window.location.href = returnUrl + "?signature=" + encodeURIComponent(data.url);
+            } else {
+                document.getElementById("result").innerHTML =
+                    "<b>✔ Gespeichert!</b><br>" +
+                    "<a href='" + data.url + "' target='_blank'>Signatur öffnen</a>";
+            }
+
         } else {
             document.getElementById("result").innerHTML =
                 "Fehler: " + data.message;
@@ -128,7 +157,7 @@ function saveSignature() {
         document.getElementById("result").innerHTML =
             "Upload fehlgeschlagen";
     });
-}</script>
+}
 
 </body>
 </html>
