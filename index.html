@@ -148,10 +148,17 @@ function clearCanvas() {
 // ===============================
 window.onload = function() {
 
-    document.getElementById("datum").innerText = getParam("datum");
-    document.getElementById("klient").innerText = getParam("klient");
-    document.getElementById("leistung").innerText = getParam("leistung");
-    document.getElementById("einheit").innerText = getParam("einheit");
+    document.getElementById("datum").innerText =
+        getParam("datum") || getParam("Datum");
+
+    document.getElementById("klient").innerText =
+        getParam("klient") || getParam("Klient");
+
+    document.getElementById("leistung").innerText =
+        getParam("leistung") || getParam("Leistung");
+
+    document.getElementById("einheit").innerText =
+        getParam("einheit") || getParam("Einheit");
 
 };
 
