@@ -13,6 +13,13 @@ body {
     padding: 10px;
 }
 
+#infoBox {
+    margin-bottom:15px;
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:8px;
+}
+
 canvas {
     border: 2px solid #333;
     border-radius: 10px;
@@ -31,13 +38,13 @@ button {
 
 <h2>Bitte unterschreiben</h2>
 
-<div id="infoBox" style="margin-bottom:15px; padding:10px; border:1px solid #ccc; border-radius:8px;">
+<div id="infoBox">
     <b>Datum:</b> <span id="datum"></span><br>
     <b>Klient:</b> <span id="klient"></span><br>
     <b>Leistung:</b> <span id="leistung"></span><br>
     <b>Einheit:</b> <span id="einheit"></span>
 </div>
-    
+
 <canvas id="canvas" width="350" height="200"></canvas><br>
 
 <button onclick="clearCanvas()">Löschen</button>
@@ -46,34 +53,34 @@ button {
 <p id="result"></p>
 
 <script>
-const canvas = document.getElementById("canvas");
-    // ===============================
-// URL-Parameter auslesen
+
+// ===============================
+// Debug
+// ===============================
+console.log("Script geladen");
+
+// ===============================
+// URL Parameter lesen
 // ===============================
 function getParam(name) {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(name) || "";
 }
 
-// Werte setzen
-document.getElementById("datum").innerText = getParam("datum");
-document.getElementById("klient").innerText = getParam("klient");
-document.getElementById("leistung").innerText = getParam("leistung");
-document.getElementById("einheit").innerText = getParam("einheit");
+// ===============================
+// Canvas Setup
+// ===============================
+const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
 let drawing = false;
 
-canvas.addEventListener("touchstart", start);
-canvas.addEventListener("touchend", stop);
-canvas.addEventListener("touchmove", draw);
-
-canvas.addEventListener("mousedown", start);
-canvas.addEventListener("mouseup", stop);
-canvas.addEventListener("mousemove", draw);
-
+// ===============================
+// Position ermitteln
+// ===============================
 function getPos(e) {
     const rect = canvas.getBoundingClientRect();
+
     if (e.touches) {
         return {
             x: e.touches[0].clientX - rect.left,
@@ -87,12 +94,16 @@ function getPos(e) {
     }
 }
 
+// ===============================
+// Zeichenfunktionen
+// ===============================
 function start(e) {
+    e.preventDefault();
     drawing = true;
     draw(e);
 }
 
-function stop() {
+function stop(e) {
     drawing = false;
     ctx.beginPath();
 }
@@ -100,7 +111,10 @@ function stop() {
 function draw(e) {
     if (!drawing) return;
 
+    e.preventDefault();
+
     const pos = getPos(e);
+
     ctx.lineWidth = 2;
     ctx.lineCap = "round";
     ctx.strokeStyle = "black";
@@ -109,14 +123,41 @@ function draw(e) {
     ctx.stroke();
     ctx.beginPath();
     ctx.moveTo(pos.x, pos.y);
-
-    e.preventDefault();
 }
 
+// ===============================
+// Events
+// ===============================
+canvas.addEventListener("mousedown", start);
+canvas.addEventListener("mouseup", stop);
+canvas.addEventListener("mousemove", draw);
+
+canvas.addEventListener("touchstart", start, { passive: false });
+canvas.addEventListener("touchend", stop);
+canvas.addEventListener("touchmove", draw, { passive: false });
+
+// ===============================
+// Canvas löschen
+// ===============================
 function clearCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
+// ===============================
+// Seite geladen → Daten anzeigen
+// ===============================
+window.onload = function() {
+
+    document.getElementById("datum").innerText = getParam("datum");
+    document.getElementById("klient").innerText = getParam("klient");
+    document.getElementById("leistung").innerText = getParam("leistung");
+    document.getElementById("einheit").innerText = getParam("einheit");
+
+};
+
+// ===============================
+// Speichern + Upload + Rückgabe
+// ===============================
 function saveSignature() {
 
     const dataURL = canvas.toDataURL("image/png");
@@ -136,9 +177,9 @@ function saveSignature() {
 
         if (data.status === "ok") {
 
-            // 🔥 AUTOMATISCHER RÜCKGABE-LINK
             const returnUrl = getParam("returnUrl");
 
+            // 🔥 Automatische Rückgabe
             if (returnUrl) {
                 window.location.href = returnUrl + "?signature=" + encodeURIComponent(data.url);
             } else {
@@ -158,6 +199,8 @@ function saveSignature() {
             "Upload fehlgeschlagen";
     });
 }
+
+</script>
 
 </body>
 </html>
