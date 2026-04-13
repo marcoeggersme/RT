@@ -176,7 +176,11 @@ function saveSignature() {
         method: "POST",
         body: JSON.stringify({
             image: dataURL,
-            fileName: fileName
+            fileName: fileName,
+            datum: getParam("Datum"),
+            klient: getParam("Klient"),
+            leistung: getParam("Leistung"),
+            einheit: getParam("Einheit")
         })
     })
     .then(response => response.json())
