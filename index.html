@@ -125,6 +125,27 @@ function draw(e) {
     ctx.moveTo(pos.x, pos.y);
 }
 
+    function onFormSubmit(e) {
+
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Form Responses 1");
+  const row = e.range.getRow();
+
+  const datum = sheet.getRange(row, 1).getValue();
+  const klient = sheet.getRange(row, 2).getValue();
+  const leitung = sheet.getRange(row, 3).getValue();
+  const einheit = sheet.getRange(row, 4).getValue();
+
+  const url =
+    "https://marcoeggersme.github.io/RT/index.html" +
+    "?Datum=" + encodeURIComponent(datum) +
+    "&Klient=" + encodeURIComponent(klient) +
+    "&Leistung=" + encodeURIComponent(leistung) +
+    "&Einheit=" + encodeURIComponent(einheit);
+
+  // Link in Spalte Unterschrift_Link schreiben
+  sheet.getRange(row, 6).setValue(url);
+}
+
 // ===============================
 // Events
 // ===============================
