@@ -124,12 +124,17 @@ function saveSignature() {
 })
     .then(res => res.json())
     .then(data => {
-        if (data.status === "ok") {
-            document.getElementById("result").innerHTML = "✔ gespeichert";
-        } else {
-            document.getElementById("result").innerHTML = "Fehler: " + data.message;
-        }
-    })
+    if (data.status === "ok") {
+
+        document.getElementById("result").innerHTML =
+            "✔ gespeichert<br><br>" +
+            '<a href="' + data.url + '" target="_blank">Unterschrift anzeigen</a>';
+
+    } else {
+        document.getElementById("result").innerHTML =
+            "Fehler: " + data.message;
+    }
+})
     .catch(err => {
         document.getElementById("result").innerHTML = "Upload fehlgeschlagen: " + err;
     });
