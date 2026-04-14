@@ -107,7 +107,7 @@ function saveSignature() {
     const dataURL = canvas.toDataURL("image/png");
     const fileName = "sign_" + new Date().getTime() + ".png";
 
-    fetch("https://script.google.com/macros/s/AKfycbz-Ly6pVQgcZ_MGH9BRBB-Ere82cTS_oP0SF6hPeEA0IWjP70LaYppHw_JbwKw-5e-vew/exec", {
+    fetch("https://script.google.com/macros/s/AKfycbwYrrMR5AnSGkNuoDDRHWIEto4Bbu_ide3Ssr2HOYIwzb7gVVWhofSt3usU-htSEzm2/exec", {
     method: "POST",
     headers: {
         "Content-Type": "application/json"
