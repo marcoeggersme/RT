@@ -37,16 +37,11 @@ button {
 <p id="result"></p>
 
 <script>
-
-// ===============================
-// Canvas Setup
-// ===============================
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
 let drawing = false;
 
-// ===============================
 function getPos(e) {
     const rect = canvas.getBoundingClientRect();
 
@@ -63,10 +58,13 @@ function getPos(e) {
     }
 }
 
-// ===============================
 function start(e) {
     e.preventDefault();
     drawing = true;
+
+    const pos = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
 }
 
 function stop(e) {
@@ -91,27 +89,25 @@ function draw(e) {
     ctx.moveTo(pos.x, pos.y);
 }
 
-// ===============================
 canvas.addEventListener("mousedown", start);
 canvas.addEventListener("mouseup", stop);
+canvas.addEventListener("mouseleave", stop);
 canvas.addEventListener("mousemove", draw);
 
 canvas.addEventListener("touchstart", start, { passive: false });
-canvas.addEventListener("touchend", stop);
+canvas.addEventListener("touchend", stop, { passive: false });
+canvas.addEventListener("touchcancel", stop, { passive: false });
 canvas.addEventListener("touchmove", draw, { passive: false });
 
-// ===============================
 function clearCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
-// ===============================
 function saveSignature() {
-
     const dataURL = canvas.toDataURL("image/png");
     const fileName = "sign_" + new Date().getTime() + ".png";
 
-    fetch("https://script.google.com/macros/s/AKfycbzsv0sxojOixn14P7dzXMaNTpG-ZuOGAOqPvif7Nvrqy7ON1JCQMG_2L11KhouNkkj8/exec", {
+    fetch("https://script.google.com/macros/s/AKfycbx-q5pPLYnV_hygvX0GRyRBNX2TP7AWvUDTtRGQZ9hlZRiYnEaxJqAt5ZqujPmFG9_xnA/exec", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -121,24 +117,18 @@ function saveSignature() {
             fileName: fileName
         })
     })
-        
     .then(res => res.json())
     .then(data => {
-
         if (data.status === "ok") {
             document.getElementById("result").innerHTML = "✔ gespeichert";
         } else {
-            document.getElementById("result").innerHTML = "Fehler";
+            document.getElementById("result").innerHTML = "Fehler: " + data.message;
         }
-
     })
     .catch(err => {
-        console.error(err);
-        document.getElementById("result").innerHTML =
-            "Upload fehlgeschlagen: " + err;
+        document.getElementById("result").innerHTML = "Upload fehlgeschlagen: " + err;
     });
 }
-
 </script>
 
 </body>
