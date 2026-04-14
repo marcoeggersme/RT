@@ -128,8 +128,10 @@ function saveSignature() {
         }
 
     })
-    .catch(() => {
-        document.getElementById("result").innerHTML = "Upload fehlgeschlagen";
+    .catch(err => {
+        console.error(err);
+        document.getElementById("result").innerHTML =
+            "Upload fehlgeschlagen: " + err;
     });
 }
 
