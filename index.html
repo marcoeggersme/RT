@@ -193,7 +193,7 @@ function saveSignature() {
     const timestamp = new Date().getTime();
     const fileName = "signatur_" + timestamp + ".png";
 
-    fetch("https://script.google.com/macros/s/AKfycbwJzRMx7LIV2KRtuV0nubaHlhySkLPh7Vvuxw_IxwBY8UmpuUsbEkmdiXOGQy8TQi00cQ/exec", {
+    fetch("https://script.google.com/macros/s/AKfycbxlR7L0wF21NTIuZ-mxQq-3jBp0j18U1d7SWry3Gvb3rpj5OcLCxnCynJzfkOWiVV_y0Q/exec", {
         method: "POST",
         body: JSON.stringify({
             image: dataURL,
