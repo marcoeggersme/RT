@@ -3,21 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Unterschrift_Auto</title>
+<title>Unterschrift</title>
 
 <style>
 body {
-    font-family: Arial, sans-serif;
-    text-align: center;
     margin: 0;
     padding: 10px;
-}
-
-#infoBox {
-    margin-bottom:15px;
-    padding:10px;
-    border:1px solid #ccc;
-    border-radius:8px;
+    text-align: center;
+    font-family: Arial, sans-serif;
 }
 
 canvas {
@@ -36,15 +29,6 @@ button {
 
 <body>
 
-<h2>Bitte unterschreiben</h2>
-
-<div id="infoBox">
-    <b>Datum:</b> <span id="datum"></span><br>
-    <b>Klient:</b> <span id="klient"></span><br>
-    <b>Leistung:</b> <span id="leistung"></span><br>
-    <b>Einheit:</b> <span id="einheit"></span>
-</div>
-
 <canvas id="canvas" width="350" height="200"></canvas><br>
 
 <button onclick="clearCanvas()">Löschen</button>
@@ -55,19 +39,6 @@ button {
 <script>
 
 // ===============================
-// Debug
-// ===============================
-console.log("Script geladen");
-
-// ===============================
-// URL Parameter lesen
-// ===============================
-function getParam(name) {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(name) || "";
-}
-
-// ===============================
 // Canvas Setup
 // ===============================
 const canvas = document.getElementById("canvas");
@@ -75,8 +46,6 @@ const ctx = canvas.getContext("2d");
 
 let drawing = false;
 
-// ===============================
-// Position ermitteln
 // ===============================
 function getPos(e) {
     const rect = canvas.getBoundingClientRect();
@@ -95,12 +64,9 @@ function getPos(e) {
 }
 
 // ===============================
-// Zeichenfunktionen
-// ===============================
 function start(e) {
     e.preventDefault();
     drawing = true;
-    draw(e);
 }
 
 function stop(e) {
@@ -125,29 +91,6 @@ function draw(e) {
     ctx.moveTo(pos.x, pos.y);
 }
 
-    function onFormSubmit(e) {
-
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Form Responses 1");
-  const row = e.range.getRow();
-
-  const datum = sheet.getRange(row, 1).getValue();
-  const klient = sheet.getRange(row, 2).getValue();
-  const leistung = sheet.getRange(row, 3).getValue();
-  const einheit = sheet.getRange(row, 4).getValue();
-
-  const url =
-    "https://marcoeggersme.github.io/RT/index.html" +
-    "?Datum=" + encodeURIComponent(datum) +
-    "&Klient=" + encodeURIComponent(klient) +
-    "&Leistung=" + encodeURIComponent(leistung) +
-    "&Einheit=" + encodeURIComponent(einheit);
-
-  // Link in Spalte Unterschrift_Link schreiben
-  sheet.getRange(row, 6).setValue(url);
-}
-
-// ===============================
-// Events
 // ===============================
 canvas.addEventListener("mousedown", start);
 canvas.addEventListener("mouseup", stop);
@@ -158,79 +101,35 @@ canvas.addEventListener("touchend", stop);
 canvas.addEventListener("touchmove", draw, { passive: false });
 
 // ===============================
-// Canvas löschen
-// ===============================
 function clearCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
 // ===============================
-// Seite geladen → Daten anzeigen
-// ===============================
-window.onload = function() {
-
-    document.getElementById("datum").innerText =
-        getParam("datum") || getParam("Datum");
-
-    document.getElementById("klient").innerText =
-        getParam("klient") || getParam("Klient");
-
-    document.getElementById("leistung").innerText =
-        getParam("leistung") || getParam("Leistung");
-
-    document.getElementById("einheit").innerText =
-        getParam("einheit") || getParam("Einheit");
-
-};
-
-// ===============================
-// Speichern + Upload + Rückgabe
-// ===============================
 function saveSignature() {
 
     const dataURL = canvas.toDataURL("image/png");
-
-    const timestamp = new Date().getTime();
-    const fileName = "signatur_" + timestamp + ".png";
+    const fileName = "sign_" + new Date().getTime() + ".png";
 
     fetch("https://script.google.com/macros/s/AKfycbyQpXhJInk-Gz4dyHNApzzgjl892CFmQHN52NPZ7FhyAkobMym9NrKq70mVuVM2ET9BLg/exec", {
         method: "POST",
         body: JSON.stringify({
             image: dataURL,
-            fileName: fileName,
-            Zeitstempel: getParam("Zeitstempel"),
-            Datum: getParam("Datum"),
-            Klient: getParam("Klient"),
-            Leistung: getParam("Leistung"),
-            Einheit: getParam("Einheit"),
-            Notiz: getParam("Notiz")
+            fileName: fileName
         })
     })
-    .then(response => response.json())
+    .then(res => res.json())
     .then(data => {
 
         if (data.status === "ok") {
-
-            const returnUrl = getParam("returnUrl");
-
-            // 🔥 Automatische Rückgabe
-            if (returnUrl) {
-                window.location.href = returnUrl + "?signature=" + encodeURIComponent(data.url);
-            } else {
-                document.getElementById("result").innerHTML =
-                    "<b>✔ Gespeichert!</b><br>" +
-                    "<a href='" + data.url + "' target='_blank'>Signatur öffnen</a>";
-            }
-
+            document.getElementById("result").innerHTML = "✔ gespeichert";
         } else {
-            document.getElementById("result").innerHTML =
-                "Fehler: " + data.message;
+            document.getElementById("result").innerHTML = "Fehler";
         }
 
     })
-    .catch(err => {
-        document.getElementById("result").innerHTML =
-            "Upload fehlgeschlagen";
+    .catch(() => {
+        document.getElementById("result").innerHTML = "Upload fehlgeschlagen";
     });
 }
 
