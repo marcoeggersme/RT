@@ -112,10 +112,14 @@ function saveSignature() {
     headers: {
         "Content-Type": "application/json"
     },
+    const params = new URLSearchParams(window.location.search);
+    const row = params.get("row");
+    
     body: JSON.stringify({
         image: dataURL,
-        fileName: fileName
-    }),
+        fileName: fileName,
+        row: row
+    })
     mode: "cors"
 })
     .then(res => res.json())
