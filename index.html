@@ -198,10 +198,12 @@ function saveSignature() {
         body: JSON.stringify({
             image: dataURL,
             fileName: fileName,
-            datum: getParam("Datum"),
-            klient: getParam("Klient"),
-            leistung: getParam("Leistung"),
-            einheit: getParam("Einheit")
+            Zeitstempel: getParam("Zeitstempel"),
+            Datum: getParam("Datum"),
+            Klient: getParam("Klient"),
+            Leistung: getParam("Leistung"),
+            Einheit: getParam("Einheit"),
+            Notiz: getParam("Notiz")
         })
     })
     .then(response => response.json())
