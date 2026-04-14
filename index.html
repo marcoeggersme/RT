@@ -108,15 +108,16 @@ function saveSignature() {
     const fileName = "sign_" + new Date().getTime() + ".png";
 
     fetch("https://script.google.com/macros/s/AKfycbyfahklttVLvVqHsH1yetcetf9HeKHyjs4NoiHSbcQ_TrlLNzK6CPzp6mxiGiHKqSbAfg/exec", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            image: dataURL,
-            fileName: fileName
-        })
-    })
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+        image: dataURL,
+        fileName: fileName
+    }),
+    mode: "cors"
+})
     .then(res => res.json())
     .then(data => {
         if (data.status === "ok") {
