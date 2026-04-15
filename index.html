@@ -193,23 +193,19 @@ function save() {
 
   fetch(API_URL, {
     method: "POST",
+    mode: "no-cors",   // 🔥 FIX
     headers: {
       "Content-Type": "application/json"
     },
     body: JSON.stringify(data)
   })
-  .then(r => r.json())
-  .then(res => {
-
-    if (res.status === "ok") {
-      alert("Gespeichert!");
-      location.reload();
-    } else {
-      alert("Fehler: " + res.message);
-    }
-
+  .then(() => {
+    alert("Gespeichert!");
+    location.reload();
   })
-  .catch(err => alert("Fehler: " + err));
+  .catch(err => {
+    alert("Fehler: " + err);
+  });
 }
 </script>
 
