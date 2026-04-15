@@ -48,6 +48,9 @@ const resultEl = document.getElementById("result");
 
 let drawing = false;
 
+// ==========================================
+// MAUS / TOUCH POSITION
+// ==========================================
 function getPos(e) {
     const rect = canvas.getBoundingClientRect();
 
@@ -64,6 +67,9 @@ function getPos(e) {
     };
 }
 
+// ==========================================
+// ZEICHNEN
+// ==========================================
 function start(e) {
     e.preventDefault();
     drawing = true;
@@ -96,6 +102,9 @@ function draw(e) {
     ctx.moveTo(pos.x, pos.y);
 }
 
+// ==========================================
+// EVENTS
+// ==========================================
 canvas.addEventListener("mousedown", start);
 canvas.addEventListener("mouseup", stop);
 canvas.addEventListener("mouseleave", stop);
@@ -106,11 +115,17 @@ canvas.addEventListener("touchend", stop, { passive: false });
 canvas.addEventListener("touchcancel", stop, { passive: false });
 canvas.addEventListener("touchmove", draw, { passive: false });
 
+// ==========================================
+// LEEREN
+// ==========================================
 function clearCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     resultEl.innerHTML = "";
 }
 
+// ==========================================
+// PRÜFEN OB LEER
+// ==========================================
 function canvasIsEmpty() {
     const blank = document.createElement("canvas");
     blank.width = canvas.width;
@@ -118,15 +133,22 @@ function canvasIsEmpty() {
     return canvas.toDataURL() === blank.toDataURL();
 }
 
-<script>
+// ==========================================
+// SPEICHERN
+// ==========================================
 function saveSignature() {
+
+    if (canvasIsEmpty()) {
+        resultEl.innerHTML = "<b>Bitte unterschreiben!</b>";
+        return;
+    }
+
     const dataURL = canvas.toDataURL("image/png");
     const fileName = "sign_" + new Date().getTime() + ".png";
 
     const params = new URLSearchParams(window.location.search);
     const row = params.get("row");
 
-    const resultEl = document.getElementById("result");
     resultEl.innerHTML = "Speichern läuft...";
 
     fetch("https://script.google.com/macros/s/AKfycbwhbFIPcO3_gas71ZDoPLKdQEhagiqVK38BVR8Q-neF3uCSkbFHIgDiICIscfxFdA3JFg/exec", {
@@ -144,27 +166,19 @@ function saveSignature() {
     .then(data => {
 
         if (data.status === "ok") {
-
-            // 🔥 LINK SAUBER ANZEIGEN
             resultEl.innerHTML =
                 "<b>✔ Unterschrift gespeichert</b><br><br>" +
-                "<a href='" + data.url + "' target='_blank'>" +
-                "👉 Unterschrift anzeigen" +
-                "</a><br><br>" +
+                "<a href='" + data.url + "' target='_blank'>👉 Unterschrift anzeigen</a><br><br>" +
                 "<small>" + data.url + "</small>";
-
         } else {
-            resultEl.innerHTML =
-                "<b>Fehler:</b><br>" + data.message;
+            resultEl.innerHTML = "<b>Fehler:</b><br>" + data.message;
         }
 
     })
     .catch(err => {
-        resultEl.innerHTML =
-            "<b>Upload fehlgeschlagen:</b><br>" + err;
+        resultEl.innerHTML = "<b>Upload fehlgeschlagen:</b><br>" + err;
     });
 }
-</script>
 </script>
 
 </body>
