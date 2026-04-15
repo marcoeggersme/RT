@@ -84,8 +84,13 @@ window.onload = function () {
 // =====================
 function loadDropdowns() {
 
-  fetch(API_URL)
-    .then(r => r.json())
+  fetch(API_URL + "?t=" + new Date().getTime())   // 🔥 FIX
+    .then(r => {
+      if (!r.ok) {
+        throw new Error("HTTP Fehler: " + r.status);
+      }
+      return r.json();
+    })
     .then(data => {
 
       const klient = document.getElementById("klient");
@@ -108,7 +113,10 @@ function loadDropdowns() {
       });
 
     })
-    .catch(err => alert("Fehler beim Laden: " + err));
+    .catch(err => {
+      console.error("Dropdown Fehler:", err);
+      alert("Fehler beim Laden: " + err);
+    });
 }
 
 // =====================
