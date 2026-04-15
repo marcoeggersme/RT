@@ -9,7 +9,7 @@ body { font-family: Arial; padding: 20px; }
 select, input, textarea {
   width: 100%;
   margin-bottom: 10px;
-  padding: 8px;
+  padding: 10px;
   font-size: 16px;
 }
 
@@ -21,7 +21,7 @@ canvas {
 }
 
 button {
-  padding: 12px;
+  padding: 14px;
   font-size: 16px;
   margin-top: 10px;
   width: 100%;
@@ -36,7 +36,7 @@ button {
 <select id="klient"></select>
 <select id="leistung"></select>
 
-<input id="einheit" placeholder="Einheit">
+<input id="einheit" placeholder="Einheit (z.B. 1)">
 <input id="datum" type="date">
 <textarea id="notiz" placeholder="Notiz"></textarea>
 
@@ -49,8 +49,9 @@ button {
 
 <script>
 
-// 🔴 HIER DEINE WEBAPP URL EINTRAGEN
+// 🔴 DEINE WEBAPP URL
 const API_URL = "https://script.google.com/macros/s/AKfycbzljcQNx57nEhg-_evxB-8ZP4Wr6Q_nOvpVerU9D4bPiluH82efPyxXhOp9kbvGufmB/exec";
+
 
 // =====================
 // DROPDOWNS LADEN
@@ -73,14 +74,20 @@ function loadDropdowns() {
         leistung.innerHTML += `<option value="${l}">${l}</option>`;
       });
 
-    });
+    })
+    .catch(err => alert("Fehler beim Laden der Dropdowns: " + err));
 }
 
-window.onload = loadDropdowns;
+window.onload = function () {
+  loadDropdowns();
+
+  // Default Datum = heute
+  document.getElementById("datum").valueAsDate = new Date();
+};
 
 
 // =====================
-// CANVAS
+// CANVAS SIGNATUR
 // =====================
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
@@ -154,22 +161,33 @@ function clearCanvas() {
 // =====================
 function save() {
 
+  const klient = document.getElementById("klient").value;
+  const leistung = document.getElementById("leistung").value;
+
+  if (!klient || !leistung) {
+    alert("Bitte Klient und Leistung auswählen!");
+    return;
+  }
+
   if (!hasSigned) {
     alert("Bitte unterschreiben!");
     return;
   }
 
   const data = {
-    klient: document.getElementById("klient").value,
-    leistung: document.getElementById("leistung").value,
-    einheit: document.getElementById("einheit").value,
+    klient: klient,
+    leistung: leistung,
+    einheit: document.getElementById("einheit").value || 1,
     datum: document.getElementById("datum").value,
     notiz: document.getElementById("notiz").value,
-    image: canvas.toDataURL("image/png")
+    signature: canvas.toDataURL("image/png")   // 🔥 WICHTIG!
   };
 
   fetch(API_URL, {
     method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify(data)
   })
   .then(r => r.json())
@@ -179,7 +197,7 @@ function save() {
       alert("Gespeichert!");
       location.reload();
     } else {
-      alert(res.message);
+      alert("Fehler: " + res.message);
     }
 
   })
