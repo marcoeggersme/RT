@@ -118,39 +118,53 @@ function canvasIsEmpty() {
     return canvas.toDataURL() === blank.toDataURL();
 }
 
+<script>
 function saveSignature() {
-    if (canvasIsEmpty()) {
-        resultEl.innerHTML = "Bitte zuerst unterschreiben.";
-        return;
-    }
-
     const dataURL = canvas.toDataURL("image/png");
-    const fileName = "sign_" + Date.now() + ".png";
+    const fileName = "sign_" + new Date().getTime() + ".png";
 
     const params = new URLSearchParams(window.location.search);
     const row = params.get("row");
 
-    resultEl.innerHTML = "Speichern läuft ...";
+    const resultEl = document.getElementById("result");
+    resultEl.innerHTML = "Speichern läuft...";
 
-    fetch("https://script.google.com/macros/s/AKfycbwhbFIPcO3_gas71ZDoPLKdQEhagiqVK38BVR8Q-neF3uCSkbFHIgDiICIscfxFdA3JFg/exec", {
+    fetch("https://script.google.com/macros/s/AKfycbyqwmHYcoO1128-ENxNsxX4WsGrIaQxJ5kCJkSBIR8Q2q9QTa_QTPPF2KiTV0nmUdXNBQ/exec", {
         method: "POST",
-        mode: "no-cors",
-        headers: {
-            "Content-Type": "text/plain;charset=utf-8"
-        },
         body: JSON.stringify({
             image: dataURL,
             fileName: fileName,
             row: row
-        })
+        }),
+        headers: {
+            "Content-Type": "text/plain"
+        }
     })
-    .then(function () {
-        resultEl.innerHTML = "✔ gespeichert<br><br>Die Unterschrift wurde übertragen.";
+    .then(res => res.json())
+    .then(data => {
+
+        if (data.status === "ok") {
+
+            // 🔥 LINK SAUBER ANZEIGEN
+            resultEl.innerHTML =
+                "<b>✔ Unterschrift gespeichert</b><br><br>" +
+                "<a href='" + data.url + "' target='_blank'>" +
+                "👉 Unterschrift anzeigen" +
+                "</a><br><br>" +
+                "<small>" + data.url + "</small>";
+
+        } else {
+            resultEl.innerHTML =
+                "<b>Fehler:</b><br>" + data.message;
+        }
+
     })
-    .catch(function (err) {
-        resultEl.innerHTML = "Upload fehlgeschlagen: " + err;
+    .catch(err => {
+        resultEl.innerHTML =
+            "<b>Upload fehlgeschlagen:</b><br>" + err;
     });
 }
+</script>
 </script>
 
 </body>
