@@ -113,15 +113,14 @@ function saveSignature() {
 
     fetch("https://script.google.com/macros/s/AKfycbyqwmHYcoO1128-ENxNsxX4WsGrIaQxJ5kCJkSBIR8Q2q9QTa_QTPPF2KiTV0nmUdXNBQ/exec", {
         method: "POST",
-       headers: {
-            "Content-Type": "text/plain"
-        }
         body: JSON.stringify({
             image: dataURL,
             fileName: fileName,
             row: row
         }),
-        mode: "cors"
+        headers: {
+            "Content-Type": "text/plain"
+        }
     })
     .then(res => res.json())
     .then(data => {
