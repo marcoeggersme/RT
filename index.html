@@ -136,19 +136,49 @@ function canvasIsEmpty() {
 // ==========================================
 // SPEICHERN
 // ==========================================
-const params = new URLSearchParams(window.location.search);
-let row = params.get("row");
+function saveSignature() {
 
-// 🔥 HARTE VALIDIERUNG
-if (!row || isNaN(row) || Number(row) < 2) {
-    resultEl.innerHTML =
-        "<b>Fehler:</b><br>Keine gültige Zeile übergeben.<br>" +
-        "Link muss so aussehen:<br>" +
-        "<small>?row=5</small>";
-    return;
+    if (canvasIsEmpty()) {
+        resultEl.innerHTML = "<b>Bitte unterschreiben!</b>";
+        return;
+    }
+
+    const dataURL = canvas.toDataURL("image/png");
+    const fileName = "sign_" + new Date().getTime() + ".png";
+
+    const params = new URLSearchParams(window.location.search);
+    const row = params.get("row");
+
+    resultEl.innerHTML = "Speichern läuft...";
+
+    fetch("https://script.google.com/macros/s/AKfycbwhbFIPcO3_gas71ZDoPLKdQEhagiqVK38BVR8Q-neF3uCSkbFHIgDiICIscfxFdA3JFg/exec", {
+        method: "POST",
+        body: JSON.stringify({
+            image: dataURL,
+            fileName: fileName,
+            row: row
+        }),
+        headers: {
+            "Content-Type": "text/plain"
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        if (data.status === "ok") {
+            resultEl.innerHTML =
+                "<b>✔ Unterschrift gespeichert</b><br><br>" +
+                "<a href='" + data.url + "' target='_blank'>👉 Unterschrift anzeigen</a><br><br>" +
+                "<small>" + data.url + "</small>";
+        } else {
+            resultEl.innerHTML = "<b>Fehler:</b><br>" + data.message;
+        }
+
+    })
+    .catch(err => {
+        resultEl.innerHTML = "<b>Upload fehlgeschlagen:</b><br>" + err;
+    });
 }
-
-row = Number(row);
 </script>
 
 </body>
