@@ -24,6 +24,11 @@ button {
     padding: 12px 20px;
     font-size: 16px;
 }
+
+#result {
+    margin-top: 12px;
+    font-size: 16px;
+}
 </style>
 </head>
 
@@ -31,31 +36,32 @@ button {
 
 <canvas id="canvas" width="350" height="200"></canvas><br>
 
-<button onclick="clearCanvas()">Löschen</button>
-<button onclick="saveSignature()">Speichern</button>
+<button type="button" onclick="clearCanvas()">Löschen</button>
+<button type="button" onclick="saveSignature()">Speichern</button>
 
 <p id="result"></p>
 
 <script>
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
+const resultEl = document.getElementById("result");
 
 let drawing = false;
 
 function getPos(e) {
     const rect = canvas.getBoundingClientRect();
 
-    if (e.touches) {
+    if (e.touches && e.touches.length > 0) {
         return {
             x: e.touches[0].clientX - rect.left,
             y: e.touches[0].clientY - rect.top
         };
-    } else {
-        return {
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top
-        };
     }
+
+    return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+    };
 }
 
 function start(e) {
@@ -68,6 +74,7 @@ function start(e) {
 }
 
 function stop(e) {
+    e.preventDefault();
     drawing = false;
     ctx.beginPath();
 }
@@ -101,61 +108,47 @@ canvas.addEventListener("touchmove", draw, { passive: false });
 
 function clearCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    resultEl.innerHTML = "";
+}
+
+function canvasIsEmpty() {
+    const blank = document.createElement("canvas");
+    blank.width = canvas.width;
+    blank.height = canvas.height;
+    return canvas.toDataURL() === blank.toDataURL();
 }
 
 function saveSignature() {
-    const dataURL = canvas.toDataURL("image/png");
-    const fileName = "sign_" + new Date().getTime() + ".png";
+    if (canvasIsEmpty()) {
+        resultEl.innerHTML = "Bitte zuerst unterschreiben.";
+        return;
+    }
 
-    // Parameter aus URL holen (optional)
+    const dataURL = canvas.toDataURL("image/png");
+    const fileName = "sign_" + Date.now() + ".png";
+
     const params = new URLSearchParams(window.location.search);
     const row = params.get("row");
 
-    function saveSignature() {
-    const dataURL = canvas.toDataURL("image/png");
-    const fileName = "sign_" + new Date().getTime() + ".png";
-
-    const params = new URLSearchParams(window.location.search);
-    const row = params.get("row");
+    resultEl.innerHTML = "Speichern läuft ...";
 
     fetch("https://script.google.com/macros/s/AKfycbyqwmHYcoO1128-ENxNsxX4WsGrIaQxJ5kCJkSBIR8Q2q9QTa_QTPPF2KiTV0nmUdXNBQ/exec", {
-            method: "POST",
-            mode: "no-cors",   // 🔥 entscheidend
-            body: JSON.stringify({
-                image: dataURL,
-                fileName: fileName,
-                row: row
-            }),
-            headers: {
-                "Content-Type": "text/plain"
-            }
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify({
+            image: dataURL,
+            fileName: fileName,
+            row: row
         })
-        .then(() => {
-            document.getElementById("result").innerHTML =
-                "✔ gespeichert<br><br>" +
-                "Unterschrift wurde erfolgreich übertragen";
-        })
-        .catch(err => {
-            document.getElementById("result").innerHTML =
-                "Upload fehlgeschlagen: " + err;
-        });
-    }
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === "ok") {
-
-            document.getElementById("result").innerHTML =
-                "✔ gespeichert<br><br>" +
-                '<a href="' + data.url + '" target="_blank">Unterschrift anzeigen</a>';
-
-        } else {
-            document.getElementById("result").innerHTML =
-                "Fehler: " + data.message;
-        }
     })
-    .catch(err => {
-        document.getElementById("result").innerHTML =
-            "Upload fehlgeschlagen: " + err;
+    .then(function () {
+        resultEl.innerHTML = "✔ gespeichert<br><br>Die Unterschrift wurde übertragen.";
+    })
+    .catch(function (err) {
+        resultEl.innerHTML = "Upload fehlgeschlagen: " + err;
     });
 }
 </script>
