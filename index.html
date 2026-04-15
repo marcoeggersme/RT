@@ -149,6 +149,14 @@ function saveSignature() {
     const params = new URLSearchParams(window.location.search);
     const row = params.get("row");
 
+    const params = new URLSearchParams(window.location.search);
+    let row = params.get("row");
+    
+    if (!row || isNaN(row)) {
+        resultEl.innerHTML = "<b>Fehler:</b><br>Keine gültige Zeile übergeben.";
+        return;
+    }
+
     resultEl.innerHTML = "Speichern läuft...";
 
     fetch("https://script.google.com/macros/s/AKfycbzlloSXlzWnTv1nFRwq9X8fgTF27sljFH5tBIlmrCkTxcUV3gmY9bYBvwIpxu51Zq8Yvw/exec", {
