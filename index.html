@@ -36,7 +36,7 @@ button {
 <select id="klient"></select>
 <select id="leistung"></select>
 
-<input id="einheit" placeholder="Einheit (z.B. 1)">
+<input id="einheit" value="1" placeholder="Einheit (z.B. 1)">
 <input id="datum" type="date">
 <textarea id="notiz" placeholder="Notiz"></textarea>
 
@@ -184,11 +184,6 @@ function save() {
     return;
   }
 
-  if (!hasSigned) {
-    alert("Bitte unterschreiben!");
-    return;
-  }
-
   const data = {
     type: "form_input",
     klient: klient,
@@ -196,12 +191,12 @@ function save() {
     einheit: document.getElementById("einheit").value || 1,
     datum: document.getElementById("datum").value,
     notiz: document.getElementById("notiz").value,
-    signature: canvas.toDataURL("image/png")
+    signature: hasSigned ? canvas.toDataURL("image/png") : ""
   };
 
   fetch(API_URL, {
     method: "POST",
-    mode: "no-cors",   // 🔥 FIX
+    mode: "no-cors",
     headers: {
       "Content-Type": "application/json"
     },
