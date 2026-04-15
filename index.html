@@ -49,22 +49,41 @@ button {
 
 <script>
 
-// 🔴 DEINE WEBAPP URL
 const API_URL = "https://script.google.com/macros/s/AKfycby4M1Fz52mwe8ObkYOQz8TdheTpMVy3byJ2lKRv2C32kAwg0eiFjNkzUPHlGVot94fYcw/exec";
-const data = {
-  type: "form_input",   // 🔥 PFLICHT
-  klient: klient,
-  leistung: leistung,
-  einheit: document.getElementById("einheit").value || 1,
-  datum: document.getElementById("datum").value,
-  notiz: document.getElementById("notiz").value,
-  signature: canvas.toDataURL("image/png")
+
+let canvas, ctx;
+let drawing = false;
+let hasSigned = false;
+
+// =====================
+// INIT
+// =====================
+window.onload = function () {
+
+  loadDropdowns();
+
+  document.getElementById("datum").valueAsDate = new Date();
+
+  canvas = document.getElementById("canvas");
+  ctx = canvas.getContext("2d");
+
+  resizeCanvas();
+
+  canvas.addEventListener("mousedown", start);
+  canvas.addEventListener("mousemove", draw);
+  canvas.addEventListener("mouseup", end);
+  canvas.addEventListener("mouseleave", end);
+
+  canvas.addEventListener("touchstart", start);
+  canvas.addEventListener("touchmove", draw);
+  canvas.addEventListener("touchend", end);
 };
 
 // =====================
-// DROPDOWNS LADEN
+// DROPDOWNS
 // =====================
 function loadDropdowns() {
+
   fetch(API_URL)
     .then(r => r.json())
     .then(data => {
@@ -74,42 +93,33 @@ function loadDropdowns() {
 
       klient.innerHTML = "<option value=''>Klient wählen</option>";
       data.klienten.forEach(k => {
-        klient.innerHTML += `<option value="${k}">${k}</option>`;
+        const opt = document.createElement("option");
+        opt.value = k;
+        opt.textContent = k;
+        klient.appendChild(opt);
       });
 
       leistung.innerHTML = "<option value=''>Leistung wählen</option>";
       data.leistungen.forEach(l => {
-        leistung.innerHTML += `<option value="${l}">${l}</option>`;
+        const opt = document.createElement("option");
+        opt.value = l;
+        opt.textContent = l;
+        leistung.appendChild(opt);
       });
 
     })
-    .catch(err => alert("Fehler beim Laden der Dropdowns: " + err));
+    .catch(err => alert("Fehler beim Laden: " + err));
 }
 
-window.onload = function () {
-  loadDropdowns();
-
-  // Default Datum = heute
-  document.getElementById("datum").valueAsDate = new Date();
-};
-
-
 // =====================
-// CANVAS SIGNATUR
+// CANVAS
 // =====================
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-
-let drawing = false;
-let hasSigned = false;
-
 function resizeCanvas() {
   const ratio = window.devicePixelRatio || 1;
   canvas.width = canvas.offsetWidth * ratio;
   canvas.height = canvas.offsetHeight * ratio;
   ctx.scale(ratio, ratio);
 }
-resizeCanvas();
 
 function getPos(e) {
   const rect = canvas.getBoundingClientRect();
@@ -137,7 +147,6 @@ function draw(e) {
 
   ctx.lineWidth = 3;
   ctx.lineCap = "round";
-  ctx.lineJoin = "round";
 
   ctx.lineTo(pos.x, pos.y);
   ctx.stroke();
@@ -149,23 +158,13 @@ function end() {
   drawing = false;
 }
 
-canvas.addEventListener("mousedown", start);
-canvas.addEventListener("mousemove", draw);
-canvas.addEventListener("mouseup", end);
-canvas.addEventListener("mouseleave", end);
-
-canvas.addEventListener("touchstart", start);
-canvas.addEventListener("touchmove", draw);
-canvas.addEventListener("touchend", end);
-
 function clearCanvas() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   hasSigned = false;
 }
 
-
 // =====================
-// SPEICHERN
+// SAVE
 // =====================
 function save() {
 
@@ -183,12 +182,13 @@ function save() {
   }
 
   const data = {
+    type: "form_input",
     klient: klient,
     leistung: leistung,
     einheit: document.getElementById("einheit").value || 1,
     datum: document.getElementById("datum").value,
     notiz: document.getElementById("notiz").value,
-    signature: canvas.toDataURL("image/png")   // 🔥 WICHTIG!
+    signature: canvas.toDataURL("image/png")
   };
 
   fetch(API_URL, {
@@ -211,7 +211,6 @@ function save() {
   })
   .catch(err => alert("Fehler: " + err));
 }
-
 </script>
 
 </body>
