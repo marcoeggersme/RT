@@ -52,13 +52,13 @@ button {
 // 🔴 DEINE WEBAPP URL
 const API_URL = "https://script.google.com/macros/s/AKfycby4M1Fz52mwe8ObkYOQz8TdheTpMVy3byJ2lKRv2C32kAwg0eiFjNkzUPHlGVot94fYcw/exec";
 const data = {
-  type: "form_input",   // 🔥 WICHTIG
+  type: "form_input",   // 🔥 PFLICHT
   klient: klient,
   leistung: leistung,
-  einheit: ...,
-  datum: ...,
-  notiz: ...,
-  signature: ...
+  einheit: document.getElementById("einheit").value || 1,
+  datum: document.getElementById("datum").value,
+  notiz: document.getElementById("notiz").value,
+  signature: canvas.toDataURL("image/png")
 };
 
 // =====================
