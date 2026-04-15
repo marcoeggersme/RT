@@ -27,7 +27,6 @@ button {
 
 #result {
     margin-top: 12px;
-    font-size: 16px;
 }
 </style>
 </head>
@@ -36,8 +35,8 @@ button {
 
 <canvas id="canvas" width="350" height="200"></canvas><br>
 
-<button type="button" onclick="clearCanvas()">Löschen</button>
-<button type="button" onclick="saveSignature()">Speichern</button>
+<button onclick="clearCanvas()">Löschen</button>
+<button onclick="saveSignature()">Speichern</button>
 
 <p id="result"></p>
 
@@ -48,13 +47,13 @@ const resultEl = document.getElementById("result");
 
 let drawing = false;
 
-// ==========================================
-// MAUS / TOUCH POSITION
-// ==========================================
+// =======================
+// Position ermitteln
+// =======================
 function getPos(e) {
     const rect = canvas.getBoundingClientRect();
 
-    if (e.touches && e.touches.length > 0) {
+    if (e.touches) {
         return {
             x: e.touches[0].clientX - rect.left,
             y: e.touches[0].clientY - rect.top
@@ -67,9 +66,9 @@ function getPos(e) {
     };
 }
 
-// ==========================================
-// ZEICHNEN
-// ==========================================
+// =======================
+// Zeichnen
+// =======================
 function start(e) {
     e.preventDefault();
     drawing = true;
@@ -80,7 +79,6 @@ function start(e) {
 }
 
 function stop(e) {
-    e.preventDefault();
     drawing = false;
     ctx.beginPath();
 }
@@ -102,82 +100,78 @@ function draw(e) {
     ctx.moveTo(pos.x, pos.y);
 }
 
-// ==========================================
-// EVENTS
-// ==========================================
+// =======================
+// Events
+// =======================
 canvas.addEventListener("mousedown", start);
 canvas.addEventListener("mouseup", stop);
 canvas.addEventListener("mouseleave", stop);
 canvas.addEventListener("mousemove", draw);
 
 canvas.addEventListener("touchstart", start, { passive: false });
-canvas.addEventListener("touchend", stop, { passive: false });
-canvas.addEventListener("touchcancel", stop, { passive: false });
+canvas.addEventListener("touchend", stop);
 canvas.addEventListener("touchmove", draw, { passive: false });
 
-// ==========================================
-// LEEREN
-// ==========================================
+// =======================
+// Canvas löschen
+// =======================
 function clearCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     resultEl.innerHTML = "";
 }
 
-// ==========================================
-// PRÜFEN OB LEER
-// ==========================================
-function canvasIsEmpty() {
+// =======================
+// Prüfen ob leer
+// =======================
+function isCanvasEmpty() {
     const blank = document.createElement("canvas");
     blank.width = canvas.width;
     blank.height = canvas.height;
     return canvas.toDataURL() === blank.toDataURL();
 }
 
-// ==========================================
-// SPEICHERN
-// ==========================================
+// =======================
+// Speichern
+// =======================
 function saveSignature() {
 
-    if (canvasIsEmpty()) {
-        resultEl.innerHTML = "<b>Bitte unterschreiben!</b>";
+    if (isCanvasEmpty()) {
+        resultEl.innerHTML = "<b>Bitte zuerst unterschreiben!</b>";
         return;
     }
-
-    const dataURL = canvas.toDataURL("image/png");
-    const fileName = "sign_" + new Date().getTime() + ".png";
-
-    const params = new URLSearchParams(window.location.search);
-    const row = params.get("row");
 
     const params = new URLSearchParams(window.location.search);
     let row = params.get("row");
-    
-    if (!row || isNaN(row)) {
-        resultEl.innerHTML = "<b>Fehler:</b><br>Keine gültige Zeile übergeben.";
+
+    // 🔥 WICHTIG: row prüfen
+    if (!row || isNaN(row) || Number(row) < 2) {
+        resultEl.innerHTML = "<b>Fehler:</b> Ungültige Zeilennummer.";
         return;
     }
 
+    row = Number(row);
+
+    const dataURL = canvas.toDataURL("image/png");
+
     resultEl.innerHTML = "Speichern läuft...";
 
-    fetch("https://script.google.com/macros/s/AKfycbxpN0BZT_9aJmPOhjh9oavGpDXHZt99bkkSWh9uY7-BffiVO_N4m8ITCfRz8hxrlm8CIg/exec", {
+    fetch("https://script.google.com/macros/s/AKfycbzyEop9nm-4zlEyIC8Vi-XE3K3tgvNoQlgspxXHdO7ZJRUQrQvIxTJ-21bQEFhcEmliaQ/exec", {
         method: "POST",
-        body: JSON.stringify({
-            image: dataURL,
-            fileName: fileName,
-            row: row
-        }),
         headers: {
             "Content-Type": "text/plain"
-        }
+        },
+        body: JSON.stringify({
+            image: dataURL,
+            row: row
+        })
     })
     .then(res => res.json())
     .then(data => {
 
         if (data.status === "ok") {
             resultEl.innerHTML =
-                "<b>✔ Unterschrift gespeichert</b><br><br>" +
-                "<a href='" + data.url + "' target='_blank'>👉 Unterschrift anzeigen</a><br><br>" +
-                "<small>" + data.url + "</small>";
+                "<b>✔ gespeichert</b><br><br>" +
+                "<a href='" + data.url + "' target='_blank'>Unterschrift anzeigen</a>";
         } else {
             resultEl.innerHTML = "<b>Fehler:</b><br>" + data.message;
         }
