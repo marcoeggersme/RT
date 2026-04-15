@@ -2,11 +2,30 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
 body { font-family: Arial; padding: 20px; }
-input, textarea { width: 100%; margin-bottom: 10px; padding: 8px; }
-canvas { border: 1px solid #000; width: 100%; height: 200px; }
-button { padding: 10px; font-size: 16px; margin-top: 10px; }
+
+input, textarea {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px;
+  font-size: 16px;
+}
+
+canvas {
+  border: 1px solid #000;
+  width: 100%;
+  height: 200px;
+  touch-action: none; /* verhindert Scrollen beim Zeichnen */
+}
+
+button {
+  padding: 12px;
+  font-size: 16px;
+  margin-top: 10px;
+  width: 100%;
+}
 </style>
 </head>
 
@@ -18,63 +37,139 @@ button { padding: 10px; font-size: 16px; margin-top: 10px; }
 <input id="leistung" placeholder="Leistung">
 <input id="einheit" placeholder="Einheit">
 <input id="datum" type="date">
-<input id="ort" placeholder="Ort">
 <textarea id="notiz" placeholder="Notiz"></textarea>
 
 <h3>Unterschrift</h3>
+
 <canvas id="canvas"></canvas>
-<button onclick="clearCanvas()">Löschen</button>
+<button onclick="clearCanvas()">Unterschrift löschen</button>
 
 <br><br>
 <button onclick="save()">Speichern</button>
 
 <script>
 
+// ===============================
+// CANVAS SETUP (MOBIL + DESKTOP)
+// ===============================
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
 let drawing = false;
+let hasSigned = false;
 
-canvas.addEventListener("mousedown", () => drawing = true);
-canvas.addEventListener("mouseup", () => drawing = false);
-canvas.addEventListener("mousemove", draw);
+// 🔹 Canvas korrekt skalieren
+function resizeCanvas() {
+  const ratio = window.devicePixelRatio || 1;
+  canvas.width = canvas.offsetWidth * ratio;
+  canvas.height = canvas.offsetHeight * ratio;
+  ctx.scale(ratio, ratio);
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
 
+// 🔹 Position bestimmen
+function getPos(e) {
+  const rect = canvas.getBoundingClientRect();
+
+  if (e.touches) {
+    return {
+      x: e.touches[0].clientX - rect.left,
+      y: e.touches[0].clientY - rect.top
+    };
+  } else {
+    return {
+      x: e.offsetX,
+      y: e.offsetY
+    };
+  }
+}
+
+// 🔹 Start Zeichnen
+function start(e) {
+  drawing = true;
+  const pos = getPos(e);
+  ctx.beginPath();
+  ctx.moveTo(pos.x, pos.y);
+}
+
+// 🔹 Zeichnen
 function draw(e) {
   if (!drawing) return;
-  ctx.lineWidth = 2;
+
+  e.preventDefault();
+
+  const pos = getPos(e);
+
+  ctx.lineWidth = 3;
   ctx.lineCap = "round";
-  ctx.lineTo(e.offsetX, e.offsetY);
+  ctx.lineJoin = "round";
+
+  ctx.lineTo(pos.x, pos.y);
   ctx.stroke();
+
+  hasSigned = true;
 }
 
+// 🔹 Stop
+function end() {
+  drawing = false;
+}
+
+// 🔹 Events Maus
+canvas.addEventListener("mousedown", start);
+canvas.addEventListener("mousemove", draw);
+canvas.addEventListener("mouseup", end);
+canvas.addEventListener("mouseleave", end);
+
+// 🔹 Events Touch
+canvas.addEventListener("touchstart", start);
+canvas.addEventListener("touchmove", draw);
+canvas.addEventListener("touchend", end);
+
+// 🔹 Löschen
 function clearCanvas() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  hasSigned = false;
 }
 
+// ===============================
+// SPEICHERN
+// ===============================
 function save() {
+
+  // 🔴 Pflichtprüfung Signatur
+  if (!hasSigned) {
+    alert("Bitte unterschreiben, bevor du speicherst.");
+    return;
+  }
 
   const data = {
     klient: document.getElementById("klient").value,
     leistung: document.getElementById("leistung").value,
     einheit: document.getElementById("einheit").value,
     datum: document.getElementById("datum").value,
-    ort: document.getElementById("ort").value,
     notiz: document.getElementById("notiz").value,
-    image: canvas.toDataURL()
+    image: canvas.toDataURL("image/png")
   };
 
-  fetch("https://script.google.com/macros/s/AKfycbxKewyLPFHAYHNKBFpUP-rRcyzYIqsDibXra185gJwEV0E6Lb4xr4hvyr4c7ojjoU_HLw/exec", {
+  fetch("HIER_DEINE_WEBAPP_URL_EINSETZEN", {
     method: "POST",
     body: JSON.stringify(data)
   })
   .then(r => r.json())
   .then(res => {
+
     if (res.status === "ok") {
       alert("Gespeichert!");
       location.reload();
     } else {
       alert("Fehler: " + res.message);
     }
+
+  })
+  .catch(err => {
+    alert("Verbindungsfehler: " + err);
   });
 }
 
