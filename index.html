@@ -148,6 +148,11 @@ function saveSignature() {
 
     const params = new URLSearchParams(window.location.search);
     const row = params.get("row");
+    console.log("ROW:", row);
+    if (!row || row === "0") {
+        resultEl.innerHTML = "<b>Fehler:</b><br>Keine gültige Zeilennummer übergeben.";
+        return;
+    } 
 
     resultEl.innerHTML = "Speichern läuft...";
 
