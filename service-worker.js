@@ -1,4 +1,4 @@
-const CACHE_NAME = "reittherapie-v1";
+const CACHE_NAME = "reittherapie-auto-" + new Date().getTime();
 
 const urlsToCache = [
   "./",
@@ -9,6 +9,7 @@ const urlsToCache = [
 
 // INSTALL
 self.addEventListener("install", event => {
+  self.skipWaiting(); // sofort aktiv
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       return cache.addAll(urlsToCache);
@@ -16,19 +17,29 @@ self.addEventListener("install", event => {
   );
 });
 
-// FETCH (Offline-Fallback)
+// FETCH
 self.addEventListener("fetch", event => {
   event.respondWith(
-    fetch(event.request).catch(() => caches.match(event.request))
+    fetch(event.request)
+      .then(response => {
+        return response;
+      })
+      .catch(() => {
+        return caches.match(event.request);
+      })
   );
 });
 
-// UPDATE
+// ACTIVATE
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
-        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+        keys.map(k => {
+          if (k !== CACHE_NAME) {
+            return caches.delete(k);
+          }
+        })
       )
     )
   );
