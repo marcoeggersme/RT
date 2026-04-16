@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 
 <style>
 body{
@@ -24,17 +27,29 @@ h2{
   gap:12px;
 }
 
+/* EINHEITLICHE FELDER */
 select,input,textarea{
   width:100%;
-  padding:14px;
+  height:52px;
+  padding:0 14px;
   border-radius:12px;
-  border:1px solid #ddd;
+  border:1px solid #d0e8d5;
   font-size:16px;
+  background:#eaf7ec;
   box-sizing:border-box;
 }
 
+textarea{
+  height:80px;
+  padding-top:12px;
+}
+
+/* Datum optisch wie Button */
 input[type="date"]{
-  height:52px;
+  appearance:none;
+  -webkit-appearance:none;
+  text-align:center;
+  font-weight:500;
 }
 
 /* BUTTONS */
@@ -52,18 +67,24 @@ button{
   font-weight:bold;
 }
 
-.btn-save{background:#c7f9cc;}
-.btn-clear{background:#e7f0ff;}
+.btn-clear{
+  background:#d6eaf8;
+}
+
+.btn-save{
+  background:#b7e4c7;
+}
 
 /* CANVAS */
 canvas{
   width:100%;
   height:200px;
-  border:2px solid #ccc;
+  border:2px solid #cfead6;
   border-radius:18px;
+  background:#f6fbf7;
 }
 
-/* ===== QUERFORMAT ===== */
+/* QUERFORMAT */
 @media (orientation: landscape){
   .form{
     display:grid;
@@ -78,7 +99,7 @@ canvas{
   }
 }
 
-/* ===== OVERLAY ===== */
+/* OVERLAY */
 #overlay{
   position:fixed;
   top:0;
@@ -114,7 +135,7 @@ canvas{
 .progress-bar{
   height:100%;
   width:0%;
-  background:#a0e7e5;
+  background:#95d5b2;
   transition:width .4s ease;
 }
 
@@ -176,12 +197,9 @@ canvas{
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbwTDDFrZZ2d5nXFfPdQwtE-YOs88E1lwRjeHpM87R4kNf_fZriuH8-iBPEPPrtnQNO6Qw/exec";
 
-/* =====================
-   INIT
-===================== */
+/* INIT */
 window.onload = function(){
 
-  // Datum vorbelegen
   const d = new Date();
   const iso = d.toISOString().split("T")[0];
   document.getElementById("datum").value = iso;
@@ -190,9 +208,7 @@ window.onload = function(){
   loadDropdowns();
 };
 
-/* =====================
-   CANVAS
-===================== */
+/* CANVAS */
 let canvas=document.getElementById("canvas");
 let ctx=canvas.getContext("2d");
 let drawing=false;
@@ -221,9 +237,7 @@ function clearCanvas(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
 }
 
-/* =====================
-   DROPDOWN
-===================== */
+/* DROPDOWN */
 function loadDropdowns(){
   fetch(API_URL+"?t="+Date.now())
   .then(r=>r.json())
@@ -251,17 +265,13 @@ function loadDropdowns(){
   });
 }
 
-/* =====================
-   PROGRESS
-===================== */
+/* PROGRESS */
 function setProgress(p,text){
   document.getElementById("bar").style.width=p+"%";
   document.getElementById("status").innerText=text;
 }
 
-/* =====================
-   SAVE
-===================== */
+/* SAVE */
 function save(){
 
   let klient=document.getElementById("klient").value;
@@ -319,11 +329,9 @@ function save(){
   },200);
 }
 
-/* =====================
-   HOME
-===================== */
+/* HOME */
 function goHome(){
-  location.reload();
+  location.href = "index.html";
 }
 </script>
 
