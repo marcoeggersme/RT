@@ -266,7 +266,7 @@ canvas{
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycby6TX3IP0IomYvlbJyq2P22qRwSVAcMGk5HRUErFrDGuLdRGday9gIMRBKLzYRUvQbORw/exec";
 const PAYPAL_EMAIL = "daniela.schroeder.2003@gmail.com";
-const CACHE_NAME = "reittherapie-v2"; // hochzählen!
+const CACHE_NAME = "reittherapie-static-v2";
 
 /* INIT */
 window.onload = function(){
@@ -493,21 +493,11 @@ function goHome(){
 }
 
 if ("serviceWorker" in navigator) {
-
-  navigator.serviceWorker.register("./service-worker.js?t=" + Date.now())
-    .then(reg => {
-
-      console.log("Service Worker aktiv");
-
-      // Update sofort aktivieren
-      reg.update();
-
-    })
+  navigator.serviceWorker.register("./service-worker.js")
+    .then(() => console.log("Service Worker aktiv"))
     .catch(err => console.error("SW Fehler:", err));
 }
-navigator.serviceWorker.addEventListener("controllerchange", function() {
-  window.location.reload();
-});  
+  
 </script>
 </body>
 </html>
