@@ -505,6 +505,9 @@ if ("serviceWorker" in navigator) {
     })
     .catch(err => console.error("SW Fehler:", err));
 }
+navigator.serviceWorker.addEventListener("controllerchange", function() {
+  window.location.reload();
+});  
 </script>
 </body>
 </html>
