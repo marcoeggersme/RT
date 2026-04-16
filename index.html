@@ -16,11 +16,8 @@ body{
   color:#2f2f2f;
 }
 
-h2{
-  cursor:pointer;
-}
+h2{cursor:pointer;}
 
-/* FORM */
 .form{
   display:flex;
   flex-direction:column;
@@ -36,33 +33,20 @@ select,input,textarea{
   font-size:16px;
   background:#eaf7ec;
   color:#2f2f2f;
-  box-sizing:border-box;
 }
 
-textarea{
-  height:80px;
-  padding-top:12px;
-}
+textarea{height:80px;padding-top:12px;}
 
-/* Einheit zentriert */
-#einheit{
-  text-align:center;
-  font-weight:600;
-}
+#einheit{text-align:center;font-weight:600;}
 
-/* Datum */
 input[type="date"]{
   appearance:none;
   -webkit-appearance:none;
   text-align:center;
-  font-weight:500;
 }
 
 /* BUTTONS */
-.btn-row{
-  display:flex;
-  gap:10px;
-}
+.btn-row{display:flex;gap:10px;}
 
 button{
   flex:1;
@@ -71,18 +55,10 @@ button{
   border:none;
   font-size:16px;
   font-weight:bold;
-  color:#2f2f2f;
 }
 
-/* 🔴 NEU: sanftes Pastell-Rot */
-.btn-clear{
-  background:#fde2e2;
-}
-
-/* 🟢 Speichern bleibt */
-.btn-save{
-  background:#b7e4c7;
-}
+.btn-clear{background:#fde2e2;}
+.btn-save{background:#b7e4c7;}
 
 /* CANVAS */
 canvas{
@@ -94,26 +70,9 @@ canvas{
   touch-action:none;
 }
 
-/* QUERFORMAT */
-@media (orientation: landscape){
-  .form{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-  }
-
-  textarea,
-  canvas,
-  .btn-row{
-    grid-column:1 / span 2;
-  }
-}
-
 /* OVERLAY */
 #overlay{
   position:fixed;
-  top:0;
-  left:0;
   width:100%;
   height:100%;
   background:rgba(255,255,255,0.95);
@@ -139,22 +98,17 @@ canvas{
   background:#eee;
   border-radius:10px;
   margin:20px auto;
-  overflow:hidden;
 }
 
 .progress-bar{
   height:100%;
   width:0%;
   background:#95d5b2;
-  transition:width .4s ease;
+  transition:width .4s;
 }
 
-.status{
-  font-size:16px;
-  color:#2f2f2f;
-}
+.status{text-align:center;}
 
-/* CONFIRM */
 #confirm{
   display:none;
   text-align:center;
@@ -188,31 +142,29 @@ canvas{
 
 <div id="confirm">
   <h2>Gespeichert</h2>
+
+  <p>Direkt bezahlen:</p>
+  <img id="paypalQR" style="width:200px;margin:15px 0;">
+
   <button class="btn-save" onclick="goHome()">Startseite</button>
 </div>
 
-<!-- OVERLAY -->
 <div id="overlay">
-  <div style="text-align:center;">
+  <div>
     <div class="horse">🐎</div>
-
-    <div class="progress">
-      <div id="bar" class="progress-bar"></div>
-    </div>
-
+    <div class="progress"><div id="bar" class="progress-bar"></div></div>
     <div id="status" class="status">Start...</div>
   </div>
 </div>
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbwTDDFrZZ2d5nXFfPdQwtE-YOs88E1lwRjeHpM87R4kNf_fZriuH8-iBPEPPrtnQNO6Qw/exec";
+const PAYPAL_EMAIL = "daniela.schroeder.2003@gmail.com";
 
 /* INIT */
 window.onload = function(){
   const d = new Date();
-  const iso = d.toISOString().split("T")[0];
-  document.getElementById("datum").value = iso;
-
+  document.getElementById("datum").value = d.toISOString().split("T")[0];
   resizeCanvas();
   loadDropdowns();
 };
@@ -223,67 +175,47 @@ let ctx = canvas.getContext("2d");
 let drawing = false;
 
 function resizeCanvas(){
-  const ratio = window.devicePixelRatio || 1;
   const rect = canvas.getBoundingClientRect();
-
-  canvas.width = rect.width * ratio;
-  canvas.height = rect.height * ratio;
-
-  ctx.setTransform(ratio,0,0,ratio,0,0);
-  ctx.lineWidth = 3;
-  ctx.lineCap = "round";
-  ctx.strokeStyle = "#2f2f2f";
+  canvas.width = rect.width;
+  canvas.height = rect.height;
 }
 window.addEventListener("resize", resizeCanvas);
 
-function getPos(e){
-  const rect = canvas.getBoundingClientRect();
-
-  if(e.touches){
-    return {
-      x: e.touches[0].clientX - rect.left,
-      y: e.touches[0].clientY - rect.top
-    };
-  } else {
-    return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    };
-  }
-}
-
-function start(e){
-  e.preventDefault();
-  drawing = true;
-  const pos = getPos(e);
+canvas.addEventListener("mousedown", e=>{
+  drawing=true;
   ctx.beginPath();
-  ctx.moveTo(pos.x,pos.y);
-}
+  ctx.moveTo(e.offsetX,e.offsetY);
+});
 
-function draw(e){
-  if(!drawing) return;
-  e.preventDefault();
-  const pos = getPos(e);
-  ctx.lineTo(pos.x,pos.y);
+canvas.addEventListener("mousemove", e=>{
+  if(!drawing)return;
+  ctx.lineTo(e.offsetX,e.offsetY);
   ctx.stroke();
-}
+});
 
-function end(){
-  drawing = false;
-}
+canvas.addEventListener("mouseup", ()=>drawing=false);
 
-canvas.addEventListener("mousedown", start);
-canvas.addEventListener("mousemove", draw);
-canvas.addEventListener("mouseup", end);
-canvas.addEventListener("mouseleave", end);
+canvas.addEventListener("touchstart", e=>{
+  drawing=true;
+  const t=e.touches[0];
+  const rect=canvas.getBoundingClientRect();
+  ctx.beginPath();
+  ctx.moveTo(t.clientX-rect.left,t.clientY-rect.top);
+},{passive:false});
 
-canvas.addEventListener("touchstart", start, {passive:false});
-canvas.addEventListener("touchmove", draw, {passive:false});
-canvas.addEventListener("touchend", end);
+canvas.addEventListener("touchmove", e=>{
+  if(!drawing)return;
+  e.preventDefault();
+  const t=e.touches[0];
+  const rect=canvas.getBoundingClientRect();
+  ctx.lineTo(t.clientX-rect.left,t.clientY-rect.top);
+  ctx.stroke();
+},{passive:false});
+
+canvas.addEventListener("touchend", ()=>drawing=false);
 
 function clearCanvas(){
-  const rect = canvas.getBoundingClientRect();
-  ctx.clearRect(0,0,rect.width,rect.height);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
 }
 
 /* DROPDOWN */
@@ -314,10 +246,16 @@ function loadDropdowns(){
   });
 }
 
+/* QR GENERATOR */
+function buildPayPalQR(amount, note){
+  const link = `https://www.paypal.me/${PAYPAL_EMAIL}/${amount}?note=${encodeURIComponent(note)}`;
+  return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(link)}`;
+}
+
 /* PROGRESS */
-function setProgress(p,text){
+function setProgress(p,t){
   document.getElementById("bar").style.width=p+"%";
-  document.getElementById("status").innerText=text;
+  document.getElementById("status").innerText=t;
 }
 
 /* SAVE */
@@ -332,7 +270,6 @@ function save(){
   }
 
   document.getElementById("overlay").style.display="flex";
-
   setProgress(10,"Daten werden vorbereitet...");
 
   setTimeout(()=>{
@@ -355,6 +292,13 @@ function save(){
         })
       })
       .then(()=>{
+
+        /* QR setzen */
+        const amount = document.getElementById("einheit").value || 1;
+        const note = "Reittherapie " + document.getElementById("datum").value;
+
+        document.getElementById("paypalQR").src = buildPayPalQR(amount, note);
+
         setProgress(100,"Fertig");
 
         setTimeout(()=>{
@@ -362,10 +306,6 @@ function save(){
           document.getElementById("form").style.display="none";
           document.getElementById("confirm").style.display="block";
         },400);
-      })
-      .catch(()=>{
-        document.getElementById("overlay").style.display="none";
-        alert("Fehler beim Speichern");
       });
 
     },300);
