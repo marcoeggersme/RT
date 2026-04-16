@@ -493,8 +493,16 @@ function goHome(){
 }
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./service-worker.js")
-    .then(() => console.log("Service Worker aktiv"))
+
+  navigator.serviceWorker.register("./service-worker.js?t=" + Date.now())
+    .then(reg => {
+
+      console.log("Service Worker aktiv");
+
+      // Update sofort aktivieren
+      reg.update();
+
+    })
     .catch(err => console.error("SW Fehler:", err));
 }
 </script>
