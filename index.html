@@ -14,6 +14,14 @@ body{
   padding:20px;
   background:#ffffff;
   color:#2f2f2f;
+
+  display:flex;
+  justify-content:center;
+}
+
+.form-wrapper{
+  width:100%;
+  max-width:520px;
 }
 
 h2{
@@ -31,11 +39,11 @@ h2{
 select,input,textarea{
   width:100%;
   min-width:0;
-  height:52px;
+  height:58px;
+  font-size:17px;
   padding:0 14px;
   border-radius:12px;
   border:1px solid #cfead6;
-  font-size:16px;
   background:#eaf7ec;
   color:#2f2f2f;
   box-sizing:border-box;
@@ -85,6 +93,10 @@ button{
 
 .btn-save{
   background:#b7e4c7;
+}
+
+html, body {
+  overscroll-behavior: contain;
 }
 
 /* CANVAS */
@@ -198,7 +210,7 @@ canvas{
 
 <body>
 
-<div id="form">
+<div id="form" class="form-wrapper">
   <h2 onclick="goHome()">Leistung erfassen</h2>
 
   <div class="form">
@@ -239,7 +251,7 @@ canvas{
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxlzhqRjPhtbg47lYPr95retKikvDoRkqjU7L3HfOOb6-zfkD8hCkLG1yH33uO3yf9LsA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycby6TX3IP0IomYvlbJyq2P22qRwSVAcMGk5HRUErFrDGuLdRGday9gIMRBKLzYRUvQbORw/exec";
 const PAYPAL_EMAIL = "daniela.schroeder.2003@gmail.com";
 
 /* INIT */
@@ -269,6 +281,7 @@ function resizeCanvas(){
   ctx.strokeStyle = "#2f2f2f";
 }
 window.addEventListener("resize", resizeCanvas);
+canvas.addEventListener("touchcancel", end);
 
 function getPos(e){
   const rect = canvas.getBoundingClientRect();
@@ -422,7 +435,7 @@ function save(){
 
       fetch(API_URL,{
         method:"POST",
-        mode:"no-cors",
+        mode:"cors",
         headers: {
           "Content-Type": "application/json"
         },
