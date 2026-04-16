@@ -44,6 +44,13 @@ textarea{
   padding-top:12px;
 }
 
+/* Einheit zentriert */
+#einheit{
+  text-align:center;
+  font-weight:600;
+}
+
+/* Datum */
 input[type="date"]{
   appearance:none;
   -webkit-appearance:none;
@@ -67,8 +74,15 @@ button{
   color:#2f2f2f;
 }
 
-.btn-clear{background:#d6eaf8;}
-.btn-save{background:#b7e4c7;}
+/* 🔴 NEU: sanftes Pastell-Rot */
+.btn-clear{
+  background:#fde2e2;
+}
+
+/* 🟢 Speichern bleibt */
+.btn-save{
+  background:#b7e4c7;
+}
 
 /* CANVAS */
 canvas{
@@ -174,7 +188,7 @@ canvas{
 
 <div id="confirm">
   <h2>Gespeichert</h2>
-  <button onclick="goHome()">Zurück</button>
+  <button class="btn-save" onclick="goHome()">Startseite</button>
 </div>
 
 <!-- OVERLAY -->
@@ -191,7 +205,7 @@ canvas{
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbwTDDFrZZ2d5nXFfPdQwtE-YOs88E1lwRjeHpM87R4kNf_fZriuH8-iBPEPPrtnQNO6Qw/exec";
+const API_URL = "DEINE_URL_HIER";
 
 /* INIT */
 window.onload = function(){
@@ -203,7 +217,7 @@ window.onload = function(){
   loadDropdowns();
 };
 
-/* CANVAS (FIXED) */
+/* CANVAS */
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 let drawing = false;
