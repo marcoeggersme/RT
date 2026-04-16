@@ -1,33 +1,55 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Leistung erfassen</title>
 
 <style>
-body { font-family: Arial; padding: 20px; }
-
-select, input, textarea {
-  width: 100%;
-  margin-bottom: 10px;
-  padding: 10px;
-  font-size: 16px;
+body {
+    font-family: Arial;
+    margin: 10px;
 }
 
-canvas {
-  border: 1px solid #000;
-  width: 100%;
-  height: 200px;
-  touch-action: none;
+label {
+    display: block;
+    margin-top: 10px;
+}
+
+select, input, textarea, button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    font-size: 16px;
+}
+
+/* SIGNATUR */
+#signature {
+    width: 100%;
+    height: 200px;
+    border: 2px solid #333;
+    background: #fff;
+    touch-action: none;
+}
+
+/* Querformat verbessern */
+@media (orientation: landscape) {
+    #signature {
+        height: 300px;
+    }
+}
+
+.btn-row {
+    display: flex;
+    gap: 10px;
 }
 
 button {
-  padding: 14px;
-  font-size: 16px;
-  margin-top: 10px;
-  width: 100%;
+    flex: 1;
 }
 </style>
 </head>
@@ -36,183 +58,159 @@ button {
 
 <h2>Leistung erfassen</h2>
 
+<label>Klient</label>
 <select id="klient"></select>
+
+<label>Leistung</label>
 <select id="leistung"></select>
 
-<input id="einheit" value="1" placeholder="Einheit (z.B. 1)">
-<input id="datum" type="date">
-<textarea id="notiz" placeholder="Notiz"></textarea>
+<label>Einheit</label>
+<input id="einheit">
 
-<h3>Unterschrift</h3>
-<canvas id="canvas"></canvas>
-<button onclick="clearCanvas()">Unterschrift löschen</button>
+<label>Notiz</label>
+<textarea id="notiz"></textarea>
 
-<br><br>
-<button onclick="save()">Speichern</button>
+<label>Unterschrift</label>
+<canvas id="signature"></canvas>
+
+<div class="btn-row">
+    <button onclick="clearCanvas()">Löschen</button>
+    <button onclick="submitForm()">Speichern</button>
+</div>
 
 <script>
 
-const API_URL = "https://script.google.com/macros/s/AKfycby5SUfqIxFdpsvu44jOJM98c9KgW3025-7MMNaSi9zPuzatqeOZEKXIUpm6dU8nOzGmow/exec";
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbybnJsJLpSy39x3GGX35f0V77IVxH2L0y_HxZhdeLNVFA7d8fYEXGOQjYyDEloUmWo7Ww/exec";
 
-let canvas, ctx;
+const canvas = document.getElementById("signature");
+const ctx = canvas.getContext("2d");
+
 let drawing = false;
-let hasSigned = false;
 
-// =====================
-// INIT
-// =====================
-window.onload = function () {
-
-  loadDropdowns();
-
-  document.getElementById("datum").valueAsDate = new Date();
-
-  canvas = document.getElementById("canvas");
-  ctx = canvas.getContext("2d");
-
-  resizeCanvas();
-
-  canvas.addEventListener("mousedown", start);
-  canvas.addEventListener("mousemove", draw);
-  canvas.addEventListener("mouseup", end);
-  canvas.addEventListener("mouseleave", end);
-
-  canvas.addEventListener("touchstart", start);
-  canvas.addEventListener("touchmove", draw);
-  canvas.addEventListener("touchend", end);
-};
-
-// =====================
-// DROPDOWNS
-// =====================
-function loadDropdowns() {
-
-  fetch(API_URL + "?t=" + new Date().getTime())   // 🔥 FIX
-    .then(r => {
-      if (!r.ok) {
-        throw new Error("HTTP Fehler: " + r.status);
-      }
-      return r.json();
-    })
-    .then(data => {
-
-      const klient = document.getElementById("klient");
-      const leistung = document.getElementById("leistung");
-
-      klient.innerHTML = "<option value=''>Klient wählen</option>";
-      data.klienten.forEach(k => {
-        const opt = document.createElement("option");
-        opt.value = k;
-        opt.textContent = k;
-        klient.appendChild(opt);
-      });
-
-      leistung.innerHTML = "<option value=''>Leistung wählen</option>";
-      data.leistungen.forEach(l => {
-        const opt = document.createElement("option");
-        opt.value = l;
-        opt.textContent = l;
-        leistung.appendChild(opt);
-      });
-
-    })
-    .catch(err => {
-      console.error("Dropdown Fehler:", err);
-      alert("Fehler beim Laden: " + err);
-    });
-}
-
-// =====================
-// CANVAS
-// =====================
+/* =========================
+   CANVAS FIX (KEIN VERZERR)
+========================= */
 function resizeCanvas() {
-  const ratio = window.devicePixelRatio || 1;
-  canvas.width = canvas.offsetWidth * ratio;
-  canvas.height = canvas.offsetHeight * ratio;
-  ctx.scale(ratio, ratio);
+    const ratio = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+
+    canvas.width = rect.width * ratio;
+    canvas.height = rect.height * ratio;
+
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 }
 
+window.addEventListener("load", resizeCanvas);
+window.addEventListener("resize", resizeCanvas);
+window.addEventListener("orientationchange", resizeCanvas);
+
+/* =========================
+   POSITION BERECHNUNG
+========================= */
 function getPos(e) {
-  const rect = canvas.getBoundingClientRect();
-  if (e.touches) {
+    const rect = canvas.getBoundingClientRect();
+
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
     return {
-      x: e.touches[0].clientX - rect.left,
-      y: e.touches[0].clientY - rect.top
+        x: clientX - rect.left,
+        y: clientY - rect.top
     };
-  }
-  return { x: e.offsetX, y: e.offsetY };
 }
+
+/* =========================
+   ZEICHNEN
+========================= */
+canvas.addEventListener("mousedown", start);
+canvas.addEventListener("mousemove", draw);
+canvas.addEventListener("mouseup", stop);
+canvas.addEventListener("mouseleave", stop);
+
+canvas.addEventListener("touchstart", start);
+canvas.addEventListener("touchmove", draw);
+canvas.addEventListener("touchend", stop);
 
 function start(e) {
-  drawing = true;
-  const pos = getPos(e);
-  ctx.beginPath();
-  ctx.moveTo(pos.x, pos.y);
+    drawing = true;
+    const pos = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
 }
 
 function draw(e) {
-  if (!drawing) return;
-  e.preventDefault();
+    if (!drawing) return;
 
-  const pos = getPos(e);
+    e.preventDefault();
 
-  ctx.lineWidth = 3;
-  ctx.lineCap = "round";
-
-  ctx.lineTo(pos.x, pos.y);
-  ctx.stroke();
-
-  hasSigned = true;
+    const pos = getPos(e);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
 }
 
-function end() {
-  drawing = false;
+function stop() {
+    drawing = false;
 }
 
+/* =========================
+   CLEAR
+========================= */
 function clearCanvas() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  hasSigned = false;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
-// =====================
-// SAVE
-// =====================
-function save() {
+/* =========================
+   DATEN LADEN
+========================= */
+async function loadData() {
+    const res = await fetch(WEBAPP_URL);
+    const data = await res.json();
 
-  const klient = document.getElementById("klient").value;
-  const leistung = document.getElementById("leistung").value;
+    const klient = document.getElementById("klient");
+    const leistung = document.getElementById("leistung");
 
-  if (!klient || !leistung) {
-    alert("Bitte Klient und Leistung auswählen!");
-    return;
-  }
+    data.klienten.forEach(k => {
+        let opt = document.createElement("option");
+        opt.value = k;
+        opt.text = k;
+        klient.appendChild(opt);
+    });
 
-  const data = {
-    type: "form_input",
-    klient: klient,
-    leistung: leistung,
-    einheit: document.getElementById("einheit").value || 1,
-    datum: document.getElementById("datum").value,
-    notiz: document.getElementById("notiz").value,
-    signature: hasSigned ? canvas.toDataURL("image/png") : ""
-  };
-
-  fetch(API_URL, {
-    method: "POST",
-    mode: "no-cors",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(data)
-  })
-  .then(() => {
-    alert("Gespeichert!");
-    location.reload();
-  })
-  .catch(err => {
-    alert("Fehler: " + err);
-  });
+    data.leistungen.forEach(l => {
+        let opt = document.createElement("option");
+        opt.value = l;
+        opt.text = l;
+        leistung.appendChild(opt);
+    });
 }
+
+loadData();
+
+/* =========================
+   SUBMIT
+========================= */
+async function submitForm() {
+
+    const payload = {
+        klient: document.getElementById("klient").value,
+        leistung: document.getElementById("leistung").value,
+        einheit: document.getElementById("einheit").value,
+        notiz: document.getElementById("notiz").value,
+        signature: canvas.toDataURL("image/png"),
+        datum: new Date().toISOString()
+    };
+
+    await fetch(WEBAPP_URL, {
+        method: "POST",
+        body: JSON.stringify(payload),
+        headers: { "Content-Type": "application/json" }
+    });
+
+    alert("Gespeichert");
+
+    clearCanvas();
+}
+
 </script>
 
 </body>
