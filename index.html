@@ -325,40 +325,61 @@ function clearCanvas(){
 
 /* DROPDOWN – ohne Cache */
 function loadDropdowns(){
-  fetch(API_URL + "?t=" + Date.now(), {
-    method: "GET",
-    cache: "no-store"
-  })
-  .then(r=>{
-    if(!r.ok) throw new Error("HTTP " + r.status);
-    return r.json();
-  })
-  .then(data=>{
-    let k=document.getElementById("klient");
-    let l=document.getElementById("leistung");
 
-    k.innerHTML="<option value=''>Klient wählen</option>";
-    (data.klienten || []).forEach(v=>{
-      let o=document.createElement("option");
-      o.value=v;
-      o.text=v;
+  const url = API_URL + "?action=getDropdowns&t=" + new Date().getTime();
+
+  fetch(url, {
+    method: "GET"
+  })
+  .then(response => {
+
+    if (!response.ok) {
+      throw new Error("HTTP Status " + response.status);
+    }
+
+    return response.json();
+  })
+  .then(data => {
+
+    let k = document.getElementById("klient");
+    let l = document.getElementById("leistung");
+
+    k.innerHTML = "<option value=''>Klient wählen</option>";
+    l.innerHTML = "";
+
+    if (!data || !data.klienten || !data.leistungen) {
+      throw new Error("Ungültige Serverantwort");
+    }
+
+    data.klienten.forEach(v => {
+      let o = document.createElement("option");
+      o.value = v;
+      o.text = v;
       k.add(o);
     });
 
-    l.innerHTML="";
-    (data.leistungen || []).forEach(v=>{
-      let o=document.createElement("option");
-      o.value=v;
-      o.text=v;
+    data.leistungen.forEach(v => {
+      let o = document.createElement("option");
+      o.value = v;
+      o.text = v;
       l.add(o);
     });
 
+    // Standardwert setzen
     if ([...l.options].some(o => o.value === "Reittherapie")) {
-      l.value="Reittherapie";
+      l.value = "Reittherapie";
     }
+
   })
-  .catch(err=>{
-    alert("Fehler beim Laden: " + err.message);
+  .catch(err => {
+
+    console.error("Dropdown Fehler:", err);
+
+    // 👇 KEIN harter Abbruch mehr
+    setTimeout(() => {
+      loadDropdowns();
+    }, 1500);
+
   });
 }
 
