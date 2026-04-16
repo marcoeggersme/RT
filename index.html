@@ -266,6 +266,7 @@ canvas{
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycby6TX3IP0IomYvlbJyq2P22qRwSVAcMGk5HRUErFrDGuLdRGday9gIMRBKLzYRUvQbORw/exec";
 const PAYPAL_EMAIL = "daniela.schroeder.2003@gmail.com";
+const CACHE_NAME = "reittherapie-v2"; // hochzählen!
 
 /* INIT */
 window.onload = function(){
@@ -490,7 +491,12 @@ function save(){
 function goHome(){
   location.href = "index.html?t=" + Date.now();
 }
-</script>
 
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./service-worker.js")
+    .then(() => console.log("Service Worker aktiv"))
+    .catch(err => console.error("SW Fehler:", err));
+}
+</script>
 </body>
 </html>
