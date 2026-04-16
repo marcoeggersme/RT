@@ -16,8 +16,12 @@ body{
   color:#2f2f2f;
 }
 
-h2{cursor:pointer;}
+h2{
+  cursor:pointer;
+  color:#2f2f2f;
+}
 
+/* FORM */
 .form{
   display:flex;
   flex-direction:column;
@@ -26,6 +30,7 @@ h2{cursor:pointer;}
 
 select,input,textarea{
   width:100%;
+  min-width:0;
   height:52px;
   padding:0 14px;
   border-radius:12px;
@@ -33,20 +38,35 @@ select,input,textarea{
   font-size:16px;
   background:#eaf7ec;
   color:#2f2f2f;
+  box-sizing:border-box;
 }
 
-textarea{height:80px;padding-top:12px;}
+textarea{
+  height:80px;
+  padding-top:12px;
+  resize:vertical;
+}
 
-#einheit{text-align:center;font-weight:600;}
+#einheit{
+  text-align:center;
+  font-weight:600;
+}
 
 input[type="date"]{
   appearance:none;
   -webkit-appearance:none;
   text-align:center;
+  font-weight:500;
+  width:100%;
+  min-width:0;
+  max-width:100%;
 }
 
 /* BUTTONS */
-.btn-row{display:flex;gap:10px;}
+.btn-row{
+  display:flex;
+  gap:10px;
+}
 
 button{
   flex:1;
@@ -55,10 +75,17 @@ button{
   border:none;
   font-size:16px;
   font-weight:bold;
+  color:#2f2f2f;
+  cursor:pointer;
 }
 
-.btn-clear{background:#fde2e2;}
-.btn-save{background:#b7e4c7;}
+.btn-clear{
+  background:#fde2e2;
+}
+
+.btn-save{
+  background:#b7e4c7;
+}
 
 /* CANVAS */
 canvas{
@@ -68,11 +95,30 @@ canvas{
   border-radius:18px;
   background:#f6fbf7;
   touch-action:none;
+  display:block;
+}
+
+/* QUERFORMAT: 2 Spalten */
+@media (orientation: landscape){
+  .form{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    align-items:start;
+  }
+
+  textarea,
+  canvas,
+  .btn-row{
+    grid-column:1 / span 2;
+  }
 }
 
 /* OVERLAY */
 #overlay{
   position:fixed;
+  top:0;
+  left:0;
   width:100%;
   height:100%;
   background:rgba(255,255,255,0.95);
@@ -98,6 +144,7 @@ canvas{
   background:#eee;
   border-radius:10px;
   margin:20px auto;
+  overflow:hidden;
 }
 
 .progress-bar{
@@ -107,12 +154,44 @@ canvas{
   transition:width .4s;
 }
 
-.status{text-align:center;}
+.status{
+  text-align:center;
+  color:#2f2f2f;
+}
 
+/* CONFIRM */
 #confirm{
   display:none;
   text-align:center;
   margin-top:40px;
+  color:#2f2f2f;
+}
+
+.confirm-inner{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+}
+
+#paypalQR{
+  display:block;
+  width:200px;
+  max-width:80vw;
+  margin:0 auto;
+}
+
+.confirm-button-wrap{
+  display:flex;
+  justify-content:center;
+  width:100%;
+}
+
+.confirm-button-wrap button{
+  flex:none;
+  width:220px;
+  max-width:80vw;
 }
 </style>
 </head>
@@ -134,19 +213,21 @@ canvas{
     <canvas id="canvas"></canvas>
 
     <div class="btn-row">
-      <button class="btn-clear" onclick="clearCanvas()">Löschen</button>
-      <button class="btn-save" onclick="save()">Speichern</button>
+      <button type="button" class="btn-clear" onclick="clearCanvas()">Löschen</button>
+      <button type="button" class="btn-save" onclick="save()">Speichern</button>
     </div>
   </div>
 </div>
 
 <div id="confirm">
-  <h2>Gespeichert</h2>
-
-  <p>Direkt bezahlen:</p>
-  <img id="paypalQR" style="width:200px;margin:15px 0;">
-
-  <button class="btn-save" onclick="goHome()">Startseite</button>
+  <div class="confirm-inner">
+    <h2>Gespeichert</h2>
+    <p>Direkt bezahlen:</p>
+    <img id="paypalQR" alt="PayPal QR-Code">
+    <div class="confirm-button-wrap">
+      <button type="button" class="btn-save" onclick="goHome()">Startseite</button>
+    </div>
+  </div>
 </div>
 
 <div id="overlay">
@@ -175,59 +256,84 @@ let ctx = canvas.getContext("2d");
 let drawing = false;
 
 function resizeCanvas(){
+  const ratio = window.devicePixelRatio || 1;
   const rect = canvas.getBoundingClientRect();
-  canvas.width = rect.width;
-  canvas.height = rect.height;
+
+  canvas.width = rect.width * ratio;
+  canvas.height = rect.height * ratio;
+
+  ctx.setTransform(ratio,0,0,ratio,0,0);
+  ctx.lineWidth = 3;
+  ctx.lineCap = "round";
+  ctx.strokeStyle = "#2f2f2f";
 }
 window.addEventListener("resize", resizeCanvas);
 
-canvas.addEventListener("mousedown", e=>{
-  drawing=true;
-  ctx.beginPath();
-  ctx.moveTo(e.offsetX,e.offsetY);
-});
+function getPos(e){
+  const rect = canvas.getBoundingClientRect();
 
-canvas.addEventListener("mousemove", e=>{
-  if(!drawing)return;
-  ctx.lineTo(e.offsetX,e.offsetY);
-  ctx.stroke();
-});
+  if(e.touches && e.touches.length){
+    return {
+      x: e.touches[0].clientX - rect.left,
+      y: e.touches[0].clientY - rect.top
+    };
+  } else {
+    return {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    };
+  }
+}
 
-canvas.addEventListener("mouseup", ()=>drawing=false);
-
-canvas.addEventListener("touchstart", e=>{
-  drawing=true;
-  const t=e.touches[0];
-  const rect=canvas.getBoundingClientRect();
-  ctx.beginPath();
-  ctx.moveTo(t.clientX-rect.left,t.clientY-rect.top);
-},{passive:false});
-
-canvas.addEventListener("touchmove", e=>{
-  if(!drawing)return;
+function start(e){
   e.preventDefault();
-  const t=e.touches[0];
-  const rect=canvas.getBoundingClientRect();
-  ctx.lineTo(t.clientX-rect.left,t.clientY-rect.top);
-  ctx.stroke();
-},{passive:false});
+  drawing = true;
+  const pos = getPos(e);
+  ctx.beginPath();
+  ctx.moveTo(pos.x,pos.y);
+}
 
-canvas.addEventListener("touchend", ()=>drawing=false);
+function draw(e){
+  if(!drawing) return;
+  e.preventDefault();
+  const pos = getPos(e);
+  ctx.lineTo(pos.x,pos.y);
+  ctx.stroke();
+}
+
+function end(){
+  drawing = false;
+}
+
+canvas.addEventListener("mousedown", start);
+canvas.addEventListener("mousemove", draw);
+canvas.addEventListener("mouseup", end);
+canvas.addEventListener("mouseleave", end);
+
+canvas.addEventListener("touchstart", start, {passive:false});
+canvas.addEventListener("touchmove", draw, {passive:false});
+canvas.addEventListener("touchend", end);
 
 function clearCanvas(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
 }
 
-/* DROPDOWN */
+/* DROPDOWN – ohne Cache */
 function loadDropdowns(){
-  fetch(API_URL+"?t="+Date.now())
-  .then(r=>r.json())
+  fetch(API_URL + "?t=" + Date.now(), {
+    method: "GET",
+    cache: "no-store"
+  })
+  .then(r=>{
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    return r.json();
+  })
   .then(data=>{
     let k=document.getElementById("klient");
     let l=document.getElementById("leistung");
 
     k.innerHTML="<option value=''>Klient wählen</option>";
-    data.klienten.forEach(v=>{
+    (data.klienten || []).forEach(v=>{
       let o=document.createElement("option");
       o.value=v;
       o.text=v;
@@ -235,14 +341,19 @@ function loadDropdowns(){
     });
 
     l.innerHTML="";
-    data.leistungen.forEach(v=>{
+    (data.leistungen || []).forEach(v=>{
       let o=document.createElement("option");
       o.value=v;
       o.text=v;
       l.add(o);
     });
 
-    l.value="Reittherapie";
+    if ([...l.options].some(o => o.value === "Reittherapie")) {
+      l.value="Reittherapie";
+    }
+  })
+  .catch(err=>{
+    alert("Fehler beim Laden: " + err.message);
   });
 }
 
@@ -274,7 +385,7 @@ function save(){
 
   setTimeout(()=>{
     setProgress(40,"Signatur wird verarbeitet...");
-    let signature=canvas.toDataURL();
+    let signature=canvas.toDataURL("image/png");
 
     setTimeout(()=>{
       setProgress(70,"Übertragung läuft...");
@@ -282,7 +393,11 @@ function save(){
       fetch(API_URL,{
         method:"POST",
         mode:"no-cors",
+        headers: {
+          "Content-Type": "application/json"
+        },
         body:JSON.stringify({
+          type: "form_input",
           klient,
           leistung,
           einheit:document.getElementById("einheit").value,
@@ -292,8 +407,6 @@ function save(){
         })
       })
       .then(()=>{
-
-        /* QR setzen */
         const amount = document.getElementById("einheit").value || 1;
         const note = "Reittherapie " + document.getElementById("datum").value;
 
@@ -306,6 +419,10 @@ function save(){
           document.getElementById("form").style.display="none";
           document.getElementById("confirm").style.display="block";
         },400);
+      })
+      .catch(()=>{
+        document.getElementById("overlay").style.display="none";
+        alert("Fehler beim Speichern");
       });
 
     },300);
@@ -314,7 +431,7 @@ function save(){
 
 /* HOME */
 function goHome(){
-  location.href="index.html";
+  location.href = "index.html?t=" + Date.now();
 }
 </script>
 
