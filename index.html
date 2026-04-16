@@ -13,9 +13,9 @@ body{
   margin:0;
   padding:20px;
   background:#ffffff;
+  color:#2f2f2f;
 }
 
-/* HEADLINE */
 h2{
   cursor:pointer;
 }
@@ -27,15 +27,15 @@ h2{
   gap:12px;
 }
 
-/* EINHEITLICHE FELDER */
 select,input,textarea{
   width:100%;
   height:52px;
   padding:0 14px;
   border-radius:12px;
-  border:1px solid #d0e8d5;
+  border:1px solid #cfead6;
   font-size:16px;
   background:#eaf7ec;
+  color:#2f2f2f;
   box-sizing:border-box;
 }
 
@@ -44,7 +44,6 @@ textarea{
   padding-top:12px;
 }
 
-/* Datum optisch wie Button */
 input[type="date"]{
   appearance:none;
   -webkit-appearance:none;
@@ -65,15 +64,11 @@ button{
   border:none;
   font-size:16px;
   font-weight:bold;
+  color:#2f2f2f;
 }
 
-.btn-clear{
-  background:#d6eaf8;
-}
-
-.btn-save{
-  background:#b7e4c7;
-}
+.btn-clear{background:#d6eaf8;}
+.btn-save{background:#b7e4c7;}
 
 /* CANVAS */
 canvas{
@@ -82,6 +77,7 @@ canvas{
   border:2px solid #cfead6;
   border-radius:18px;
   background:#f6fbf7;
+  touch-action:none;
 }
 
 /* QUERFORMAT */
@@ -141,7 +137,7 @@ canvas{
 
 .status{
   font-size:16px;
-  color:#555;
+  color:#2f2f2f;
 }
 
 /* CONFIRM */
@@ -199,7 +195,6 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwTDDFrZZ2d5nXFfPdQwtE-
 
 /* INIT */
 window.onload = function(){
-
   const d = new Date();
   const iso = d.toISOString().split("T")[0];
   document.getElementById("datum").value = iso;
@@ -208,33 +203,73 @@ window.onload = function(){
   loadDropdowns();
 };
 
-/* CANVAS */
-let canvas=document.getElementById("canvas");
-let ctx=canvas.getContext("2d");
-let drawing=false;
+/* CANVAS (FIXED) */
+let canvas = document.getElementById("canvas");
+let ctx = canvas.getContext("2d");
+let drawing = false;
 
 function resizeCanvas(){
-  canvas.width = canvas.offsetWidth;
-  canvas.height = canvas.offsetHeight;
+  const ratio = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+
+  canvas.width = rect.width * ratio;
+  canvas.height = rect.height * ratio;
+
+  ctx.setTransform(ratio,0,0,ratio,0,0);
+  ctx.lineWidth = 3;
+  ctx.lineCap = "round";
+  ctx.strokeStyle = "#2f2f2f";
 }
-window.addEventListener("resize",resizeCanvas);
+window.addEventListener("resize", resizeCanvas);
 
-canvas.addEventListener("mousedown",e=>{
-  drawing=true;
+function getPos(e){
+  const rect = canvas.getBoundingClientRect();
+
+  if(e.touches){
+    return {
+      x: e.touches[0].clientX - rect.left,
+      y: e.touches[0].clientY - rect.top
+    };
+  } else {
+    return {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    };
+  }
+}
+
+function start(e){
+  e.preventDefault();
+  drawing = true;
+  const pos = getPos(e);
   ctx.beginPath();
-  ctx.moveTo(e.offsetX,e.offsetY);
-});
+  ctx.moveTo(pos.x,pos.y);
+}
 
-canvas.addEventListener("mousemove",e=>{
-  if(!drawing)return;
-  ctx.lineTo(e.offsetX,e.offsetY);
+function draw(e){
+  if(!drawing) return;
+  e.preventDefault();
+  const pos = getPos(e);
+  ctx.lineTo(pos.x,pos.y);
   ctx.stroke();
-});
+}
 
-canvas.addEventListener("mouseup",()=>drawing=false);
+function end(){
+  drawing = false;
+}
+
+canvas.addEventListener("mousedown", start);
+canvas.addEventListener("mousemove", draw);
+canvas.addEventListener("mouseup", end);
+canvas.addEventListener("mouseleave", end);
+
+canvas.addEventListener("touchstart", start, {passive:false});
+canvas.addEventListener("touchmove", draw, {passive:false});
+canvas.addEventListener("touchend", end);
 
 function clearCanvas(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const rect = canvas.getBoundingClientRect();
+  ctx.clearRect(0,0,rect.width,rect.height);
 }
 
 /* DROPDOWN */
@@ -287,13 +322,10 @@ function save(){
   setProgress(10,"Daten werden vorbereitet...");
 
   setTimeout(()=>{
-
     setProgress(40,"Signatur wird verarbeitet...");
-
     let signature=canvas.toDataURL();
 
     setTimeout(()=>{
-
       setProgress(70,"Übertragung läuft...");
 
       fetch(API_URL,{
@@ -309,7 +341,6 @@ function save(){
         })
       })
       .then(()=>{
-
         setProgress(100,"Fertig");
 
         setTimeout(()=>{
@@ -317,7 +348,6 @@ function save(){
           document.getElementById("form").style.display="none";
           document.getElementById("confirm").style.display="block";
         },400);
-
       })
       .catch(()=>{
         document.getElementById("overlay").style.display="none";
@@ -325,13 +355,12 @@ function save(){
       });
 
     },300);
-
   },200);
 }
 
 /* HOME */
 function goHome(){
-  location.href = "index.html";
+  location.href="index.html";
 }
 </script>
 
