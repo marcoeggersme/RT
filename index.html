@@ -239,7 +239,7 @@ canvas{
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbwTDDFrZZ2d5nXFfPdQwtE-YOs88E1lwRjeHpM87R4kNf_fZriuH8-iBPEPPrtnQNO6Qw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyxF2xU07ZkvvlRo_j2brC-06LB9u28RJG9HNKrZD7HsuR2NZ1Q-CVqZ_3yeY5yRsvU9Q/exec";
 const PAYPAL_EMAIL = "daniela.schroeder.2003@gmail.com";
 
 /* INIT */
@@ -254,6 +254,7 @@ window.onload = function(){
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 let drawing = false;
+let hasSignature = false;
 
 function resizeCanvas(){
   const ratio = window.devicePixelRatio || 1;
@@ -296,9 +297,12 @@ function start(e){
 function draw(e){
   if(!drawing) return;
   e.preventDefault();
+
   const pos = getPos(e);
   ctx.lineTo(pos.x,pos.y);
   ctx.stroke();
+
+  hasSignature = true; // <-- WICHTIG
 }
 
 function end(){
@@ -316,6 +320,7 @@ canvas.addEventListener("touchend", end);
 
 function clearCanvas(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
+  hasSignature = false; // <-- Reset
 }
 
 /* DROPDOWN – ohne Cache */
@@ -385,7 +390,11 @@ function save(){
 
   setTimeout(()=>{
     setProgress(40,"Signatur wird verarbeitet...");
-    let signature=canvas.toDataURL("image/png");
+    let signature = null;
+
+  if(hasSignature){
+    signature = canvas.toDataURL("image/png");
+  }
 
     setTimeout(()=>{
       setProgress(70,"Übertragung läuft...");
@@ -396,15 +405,15 @@ function save(){
         headers: {
           "Content-Type": "application/json"
         },
-        body:JSON.stringify({
-          type: "form_input",
-          klient,
-          leistung,
-          einheit:document.getElementById("einheit").value,
-          datum:document.getElementById("datum").value,
-          notiz:document.getElementById("notiz").value,
-          signature
-        })
+       body: JSON.stringify({
+        type: "form_input",
+        klient,
+        leistung,
+        einheit:document.getElementById("einheit").value,
+        datum:document.getElementById("datum").value,
+        notiz:document.getElementById("notiz").value,
+        signature
+      })
       })
       .then(()=>{
         const amount = document.getElementById("einheit").value || 1;
