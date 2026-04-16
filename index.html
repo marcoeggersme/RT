@@ -2,562 +2,296 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-:root{
-  --bg: #ffffff;
-  --text: #22313f;
-  --muted: #6b7280;
-
-  --field-bg: #f3f4f6;
-  --field-border: #cfd8dc;
-
-  --pastel-blue: #dbeafe;
-  --pastel-blue-border: #93c5fd;
-
-  --pastel-green: #d9f7be;
-  --pastel-green-border: #95de64;
-
-  --pastel-rose: #ffe4e6;
-  --pastel-rose-border: #fda4af;
-
-  --pastel-lilac: #ede9fe;
-  --pastel-lilac-border: #c4b5fd;
-
-  --link: #5b7c99;
-}
-
-*{
-  box-sizing:border-box;
-}
-
-html, body{
-  margin:0;
-  padding:0;
-  background:var(--bg);
-  color:var(--text);
-  font-family: Arial, sans-serif;
-}
-
 body{
+  font-family: Arial, sans-serif;
+  margin:0;
   padding:20px;
-}
-
-.page{
-  max-width: 980px;
-  margin: 0 auto;
-}
-
-.header-block{
-  margin-bottom: 10px;
-}
-
-h2{
-  margin:0 0 6px 0;
-  font-size: 28px;
-  line-height: 1.15;
-  font-weight: 700;
-  color: #111827;
-}
-
-.refresh-link{
-  display:inline-block;
-  padding:0;
-  border:none;
-  background:none;
-  color:var(--link);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  font-size:15px;
-  cursor:pointer;
-}
-
-.refresh-link:active{
-  opacity:0.7;
-}
-
-.form-grid{
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-}
-
-.form-grid > *{
-  min-width:0;
-}
-
-select,
-input,
-textarea,
-button{
-  width:100%;
-  min-width:0;
-  font-size:16px;
-  line-height:1.25;
-  border-radius:14px;
-  outline:none;
-}
-
-select,
-input,
-textarea{
-  background:var(--field-bg);
-  border:1.5px solid var(--field-border);
-  color:#111827;
-  padding:14px 16px;
-  -webkit-appearance:none;
-  appearance:none;
-}
-
-select{
-  min-height:56px;
-}
-
-input{
-  min-height:56px;
-}
-
-input[type="date"]{
-  display:block;
-  width:100%;
-  min-width:0;
-  max-width:100%;
-  -webkit-appearance:none;
-  appearance:none;
-}
-
-textarea{
-  min-height:110px;
-  resize:vertical;
-}
-
-#einheit{
-  text-align:center;
   background:#ffffff;
 }
 
-#datum{
-  text-align:center;
+/* FORM */
+select,input,textarea,button{
+  width:100%;
+  padding:14px;
+  margin-bottom:12px;
+  border-radius:12px;
+  border:1px solid #ddd;
+  font-size:16px;
 }
+
+#einheit{text-align:center;}
 
 canvas{
-  display:block;
   width:100%;
-  height:220px;
-  background:#ffffff;
-  border:2px solid var(--pastel-lilac-border);
+  height:200px;
+  border:2px solid #ccc;
   border-radius:18px;
-  touch-action:none;
 }
 
+/* BUTTONS */
 .btn-row{
   display:flex;
-  gap:12px;
+  gap:10px;
 }
 
-.btn-row button{
+.btn{
   flex:1;
-  min-height:56px;
-  padding:14px 16px;
-  font-weight:700;
-  border:1.5px solid transparent;
-  cursor:pointer;
-  transition:transform .06s ease, opacity .15s ease;
+  font-weight:bold;
+  border:none;
 }
 
-.btn-row button:active,
-#pageConfirm button:active{
-  transform:scale(0.985);
+.btn-save{
+  background:#c7f9cc;
 }
 
-.btn-secondary{
-  background:var(--pastel-blue);
-  border-color:var(--pastel-blue-border);
-  color:#355c7d;
+.btn-clear{
+  background:#e7f0ff;
 }
 
-.btn-primary{
-  background:var(--pastel-green);
-  border-color:var(--pastel-green-border);
-  color:#2f5d2f;
+/* ===== OVERLAY ===== */
+#overlay{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(255,255,255,0.95);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
 }
 
-#pageConfirm{
+.overlay-box{
+  text-align:center;
+}
+
+/* Pferd Animation */
+.horse{
+  font-size:60px;
+  animation:run 1s infinite alternate ease-in-out;
+}
+
+@keyframes run{
+  from{transform:translateX(-10px);}
+  to{transform:translateX(10px);}
+}
+
+/* Progress Bar */
+.progress{
+  width:220px;
+  height:10px;
+  background:#eee;
+  border-radius:10px;
+  margin:20px auto;
+  overflow:hidden;
+}
+
+.progress-bar{
+  height:100%;
+  width:0%;
+  background:#a0e7e5;
+  transition:width .4s ease;
+}
+
+.status{
+  font-size:16px;
+  color:#555;
+  font-weight:500;
+}
+
+/* CONFIRM */
+#confirm{
   display:none;
   text-align:center;
   margin-top:40px;
 }
 
-#pageConfirm h2{
-  margin-bottom:14px;
-}
-
-#pageConfirm button{
-  min-height:56px;
-  padding:14px 16px;
-  border-radius:14px;
-  border:1.5px solid var(--pastel-rose-border);
-  background:var(--pastel-rose);
-  color:#7a3340;
-  font-weight:700;
+button{
   cursor:pointer;
-}
-
-::placeholder{
-  color:#9aa0a6;
-}
-
-@media (orientation: landscape){
-  body{
-    padding:10px 14px;
-  }
-
-  .header-block{
-    margin-bottom:8px;
-  }
-
-  h2{
-    font-size:20px;
-    margin-bottom:2px;
-  }
-
-  .refresh-link{
-    font-size:13px;
-  }
-
-  .form-grid{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap:10px;
-    align-items:start;
-  }
-
-  textarea,
-  canvas,
-  .btn-row{
-    grid-column:1 / span 2;
-  }
-
-  textarea{
-    min-height:82px;
-  }
-
-  canvas{
-    height:180px;
-  }
-
-  select,
-  input{
-    min-height:52px;
-  }
-
-  .btn-row button,
-  #pageConfirm button{
-    min-height:52px;
-  }
 }
 </style>
 </head>
 
 <body>
-<div class="page">
 
-  <div id="pageForm">
-    <div class="header-block">
-      <h2>Leistung erfassen</h2>
-      <button type="button" class="refresh-link" onclick="goHome()">Daten neu laden</button>
+<div id="form">
+  <h2 onclick="gohome()">Leistung erfassen</h2>
+
+  <select id="klient"></select>
+  <select id="leistung"></select>
+
+  <input id="einheit" value="1">
+  <input id="datum" type="date">
+
+  <textarea id="notiz" placeholder="Notiz"></textarea>
+
+  <canvas id="canvas"></canvas>
+
+  <div class="btn-row">
+    <button class="btn btn-clear" onclick="clearCanvas()">Löschen</button>
+    <button class="btn btn-save" onclick="save()">Speichern</button>
+  </div>
+</div>
+
+<div id="confirm">
+  <h2>Gespeichert</h2>
+  <button onclick="location.reload()">Zurück</button>
+</div>
+
+<!-- OVERLAY -->
+<div id="overlay">
+  <div class="overlay-box">
+    <div class="horse">🐎</div>
+
+    <div class="progress">
+      <div id="bar" class="progress-bar"></div>
     </div>
 
-    <div class="form-grid">
-      <select id="klient"></select>
-      <select id="leistung"></select>
-
-      <input id="einheit" value="1" inputmode="numeric" placeholder="Einheit">
-      <input id="datum" type="date">
-
-      <textarea id="notiz" placeholder="Notiz"></textarea>
-
-      <canvas id="canvas"></canvas>
-
-      <div class="btn-row">
-        <button type="button" class="btn-secondary" onclick="clearCanvas()">Löschen</button>
-        <button type="button" class="btn-primary" onclick="save()">Speichern</button>
-      </div>
-    </div>
+    <div id="status" class="status">Start...</div>
   </div>
-
-  <div id="pageConfirm">
-    <h2>Gespeichert</h2>
-    <button type="button" onclick="goHome()">Zurück zur Startseite</button>
-  </div>
-
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycby5SUfqIxFdpsvu44jOJM98c9KgW3025-7MMNaSi9zPuzatqeOZEKXIUpm6dU8nOzGmow/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwTDDFrZZ2d5nXFfPdQwtE-YOs88E1lwRjeHpM87R4kNf_fZriuH8-iBPEPPrtnQNO6Qw/exec";
 
-let canvas, ctx;
+let canvas = document.getElementById("canvas");
+let ctx = canvas.getContext("2d");
 let drawing = false;
-let hasSigned = false;
-
-/* =====================
-   INIT
-===================== */
-window.onload = function () {
-  canvas = document.getElementById("canvas");
-  ctx = canvas.getContext("2d");
-
-  if (!localStorage.getItem("formState")) {
-    document.getElementById("datum").valueAsDate = new Date();
-  }
-
-  resizeCanvas();
-  bindEvents();
-  loadDropdowns(true);
-};
-
-window.addEventListener("resize", () => {
-  resizeCanvas();
-});
-
-window.addEventListener("orientationchange", () => {
-  setTimeout(() => {
-    resizeCanvas();
-  }, 150);
-});
-
-function bindEvents() {
-  canvas.addEventListener("mousedown", start);
-  canvas.addEventListener("mousemove", draw);
-  canvas.addEventListener("mouseup", end);
-  canvas.addEventListener("mouseleave", end);
-
-  canvas.addEventListener("touchstart", start, { passive: false });
-  canvas.addEventListener("touchmove", draw, { passive: false });
-  canvas.addEventListener("touchend", end);
-
-  ["klient", "leistung", "einheit", "datum", "notiz"].forEach(id => {
-    const el = document.getElementById(id);
-    el.addEventListener("change", saveState);
-    el.addEventListener("input", saveState);
-  });
-}
-
-/* =====================
-   DROPDOWNS
-===================== */
-function loadDropdowns(initialLoad = false) {
-  const savedState = JSON.parse(localStorage.getItem("formState") || "{}");
-
-  fetch(API_URL + "?t=" + Date.now())
-    .then(r => {
-      if (!r.ok) {
-        throw new Error("HTTP Fehler: " + r.status);
-      }
-      return r.json();
-    })
-    .then(data => {
-      const klient = document.getElementById("klient");
-      const leistung = document.getElementById("leistung");
-
-      klient.innerHTML = "<option value=''>Klient wählen</option>";
-      (data.klienten || []).forEach(k => {
-        const opt = document.createElement("option");
-        opt.value = k;
-        opt.textContent = k;
-        klient.appendChild(opt);
-      });
-
-      leistung.innerHTML = "<option value=''>Leistung wählen</option>";
-      (data.leistungen || []).forEach(l => {
-        const opt = document.createElement("option");
-        opt.value = l;
-        opt.textContent = l;
-        leistung.appendChild(opt);
-      });
-
-      if (savedState.klient && Array.from(klient.options).some(o => o.value === savedState.klient)) {
-        klient.value = savedState.klient;
-      }
-
-      if (savedState.leistung && Array.from(leistung.options).some(o => o.value === savedState.leistung)) {
-        leistung.value = savedState.leistung;
-      } else {
-        const standard = Array.from(leistung.options).find(o => (o.value || "").toLowerCase() === "reittherapie");
-        if (standard) leistung.value = standard.value;
-      }
-
-      if (initialLoad) {
-        loadState();
-      }
-
-      saveState();
-    })
-    .catch(err => {
-      console.error("Dropdown Fehler:", err);
-      alert("Fehler beim Laden: " + err.message);
-    });
-}
-
-function reloadDropdowns() {
-  saveState();
-  loadDropdowns(false);
-}
 
 /* =====================
    CANVAS
 ===================== */
-function resizeCanvas() {
-  if (!canvas || !ctx) return;
-
-  const ratio = window.devicePixelRatio || 1;
-  const rect = canvas.getBoundingClientRect();
-
-  canvas.width = rect.width * ratio;
-  canvas.height = rect.height * ratio;
-
-  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-  ctx.lineWidth = 3;
-  ctx.lineCap = "round";
-  ctx.strokeStyle = "#5b4b8a";
-
-  const sig = localStorage.getItem("signature");
-  if (sig) {
-    const img = new Image();
-    img.onload = () => {
-      ctx.clearRect(0, 0, rect.width, rect.height);
-      ctx.drawImage(img, 0, 0, rect.width, rect.height);
-    };
-    img.src = sig;
-    hasSigned = true;
-  }
+function resizeCanvas(){
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
 }
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
 
-function getPos(e) {
-  const rect = canvas.getBoundingClientRect();
-  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-  return {
-    x: clientX - rect.left,
-    y: clientY - rect.top
-  };
-}
-
-function start(e) {
-  e.preventDefault();
-  drawing = true;
-  const pos = getPos(e);
+canvas.addEventListener("mousedown", e=>{
+  drawing=true;
   ctx.beginPath();
-  ctx.moveTo(pos.x, pos.y);
-}
+  ctx.moveTo(e.offsetX,e.offsetY);
+});
 
-function draw(e) {
-  if (!drawing) return;
-  e.preventDefault();
-
-  const pos = getPos(e);
-  ctx.lineTo(pos.x, pos.y);
+canvas.addEventListener("mousemove", e=>{
+  if(!drawing)return;
+  ctx.lineTo(e.offsetX,e.offsetY);
   ctx.stroke();
+});
 
-  hasSigned = true;
-  saveState();
-}
+canvas.addEventListener("mouseup", ()=>drawing=false);
 
-function end() {
-  drawing = false;
-}
-
-function clearCanvas() {
-  const rect = canvas.getBoundingClientRect();
-  ctx.clearRect(0, 0, rect.width, rect.height);
-  hasSigned = false;
-  localStorage.removeItem("signature");
+function clearCanvas(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
 }
 
 /* =====================
-   STATE
+   DROPDOWN
 ===================== */
-function saveState() {
-  const state = {
-    klient: document.getElementById("klient").value,
-    leistung: document.getElementById("leistung").value,
-    einheit: document.getElementById("einheit").value,
-    datum: document.getElementById("datum").value,
-    notiz: document.getElementById("notiz").value
-  };
+function reload(){
+  fetch(API_URL)
+  .then(r=>r.json())
+  .then(data=>{
+    let k=document.getElementById("klient");
+    let l=document.getElementById("leistung");
 
-  localStorage.setItem("formState", JSON.stringify(state));
+    k.innerHTML="<option>Klient wählen</option>";
+    data.klienten.forEach(v=>{
+      let o=document.createElement("option");
+      o.text=v;
+      k.add(o);
+    });
 
-  if (hasSigned) {
-    localStorage.setItem("signature", canvas.toDataURL("image/png"));
-  }
+    l.innerHTML="";
+    data.leistungen.forEach(v=>{
+      let o=document.createElement("option");
+      o.text=v;
+      l.add(o);
+    });
+
+    l.value="Reittherapie";
+  });
 }
 
-function loadState() {
-  const state = JSON.parse(localStorage.getItem("formState") || "{}");
+reload();
 
-  if (state.klient) document.getElementById("klient").value = state.klient;
-  if (state.leistung) document.getElementById("leistung").value = state.leistung;
-  if (state.einheit) document.getElementById("einheit").value = state.einheit;
-  if (state.datum) {
-    document.getElementById("datum").value = state.datum;
-  } else if (!document.getElementById("datum").value) {
-    document.getElementById("datum").valueAsDate = new Date();
-  }
-  if (state.notiz) document.getElementById("notiz").value = state.notiz;
+/* =====================
+   PROGRESS STEUERUNG
+===================== */
+function setProgress(p,text){
+  document.getElementById("bar").style.width=p+"%";
+  document.getElementById("status").innerText=text;
 }
 
 /* =====================
    SAVE
 ===================== */
-function save() {
-  const klient = document.getElementById("klient").value;
-  const leistung = document.getElementById("leistung").value;
+function save(){
 
-  if (!klient || !leistung) {
-    alert("Bitte Klient und Leistung auswählen!");
+  let klient=document.getElementById("klient").value;
+  let leistung=document.getElementById("leistung").value;
+
+  if(!klient||!leistung){
+    alert("Bitte auswählen");
     return;
   }
 
-  const data = {
-    type: "form_input",
-    klient: klient,
-    leistung: leistung,
-    einheit: document.getElementById("einheit").value || 1,
-    datum: document.getElementById("datum").value,
-    notiz: document.getElementById("notiz").value,
-    signature: hasSigned ? canvas.toDataURL("image/png") : ""
-  };
+  document.getElementById("overlay").style.display="flex";
 
-  fetch(API_URL, {
-    method: "POST",
-    mode: "no-cors",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(data)
-  })
-  .then(() => {
-    localStorage.removeItem("formState");
-    localStorage.removeItem("signature");
-    document.getElementById("pageForm").style.display = "none";
-    document.getElementById("pageConfirm").style.display = "block";
-  })
-  .catch(err => {
-    alert("Fehler: " + err);
-  });
-}
+  setProgress(10,"Daten werden vorbereitet...");
 
-/* =====================
-   HOME
-===================== */
-function goHome() {
-  location.reload();
+  setTimeout(()=>{
+
+    setProgress(30,"Signatur wird verarbeitet...");
+
+    let signature = canvas.toDataURL();
+
+    setTimeout(()=>{
+
+      setProgress(60,"Übertragung läuft...");
+
+      fetch(API_URL,{
+        method:"POST",
+        mode:"no-cors",
+        body:JSON.stringify({
+          klient,
+          leistung,
+          einheit:document.getElementById("einheit").value,
+          datum:document.getElementById("datum").value,
+          notiz:document.getElementById("notiz").value,
+          signature
+        })
+      })
+      .then(()=>{
+
+        setProgress(90,"Speichern abgeschlossen...");
+
+        setTimeout(()=>{
+          setProgress(100,"Fertig");
+
+          document.getElementById("overlay").style.display="none";
+
+          document.getElementById("form").style.display="none";
+          document.getElementById("confirm").style.display="block";
+
+        },400);
+
+      })
+      .catch(err=>{
+        document.getElementById("overlay").style.display="none";
+        alert("Fehler");
+      });
+
+    },300);
+
+  },200);
 }
 </script>
+
 </body>
 </html>
