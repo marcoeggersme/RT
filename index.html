@@ -435,7 +435,7 @@ function save(){
 
       fetch(API_URL,{
         method:"POST",
-        mode:"cors",
+        mode:"no-cors",
         headers: {
           "Content-Type": "application/json"
         },
@@ -450,6 +450,7 @@ function save(){
       })
       })
       .then(()=>{
+        // Erfolg wird angenommen (GAS bestätigt nicht aktiv)
         const amount = document.getElementById("einheit").value || 1;
         const note = "Reittherapie " + document.getElementById("datum").value;
 
