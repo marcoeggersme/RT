@@ -9,16 +9,30 @@
 <style>
 body { font-family: Arial; padding: 20px; }
 
+h2 {
+  cursor: pointer;
+}
+
+.form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 select, input, textarea {
   width: 100%;
-  margin-bottom: 10px;
   padding: 10px;
   font-size: 16px;
   box-sizing: border-box;
 }
 
+#einheit {
+  text-align: center;
+}
+
 canvas {
   border: 1px solid #000;
+  border-radius: 12px;
   width: 100%;
   height: 200px;
   touch-action: none;
@@ -31,7 +45,6 @@ button {
   font-size: 16px;
   margin-top: 10px;
   width: 100%;
-  box-sizing: border-box;
 }
 
 #pageConfirm {
@@ -40,9 +53,25 @@ button {
   margin-top: 40px;
 }
 
+/* Querformat */
 @media (orientation: landscape) {
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  textarea {
+    grid-column: span 2;
+  }
+
   canvas {
-    height: 260px;
+    grid-column: span 2;
+    height: 220px;
+  }
+
+  button {
+    grid-column: span 2;
   }
 }
 </style>
@@ -51,42 +80,44 @@ button {
 <body>
 
 <div id="pageForm">
-  <h2>Leistung erfassen</h2>
+  <h2 onclick="reloadDropdowns()">Leistung erfassen</h2>
 
-  <select id="klient"></select>
-  <select id="leistung"></select>
+  <div class="form-grid">
 
-  <button type="button" onclick="reloadDropdowns()">Daten aktualisieren</button>
+    <select id="klient"></select>
+    <select id="leistung"></select>
 
-  <input id="einheit" value="1" placeholder="Einheit (z.B. 1)">
-  <input id="datum" type="date">
-  <textarea id="notiz" placeholder="Notiz"></textarea>
+    <input id="einheit" value="1" placeholder="Einheit">
+    <input id="datum" type="date">
 
-  <h3>Unterschrift</h3>
-  <canvas id="canvas"></canvas>
-  <button type="button" onclick="clearCanvas()">Unterschrift löschen</button>
+    <textarea id="notiz" placeholder="Notiz"></textarea>
 
-  <br><br>
-  <button type="button" onclick="save()">Speichern</button>
+    <canvas id="canvas"></canvas>
+
+    <button type="button" onclick="clearCanvas()">Unterschrift löschen</button>
+    <button type="button" onclick="save()">Speichern</button>
+
+  </div>
 </div>
 
 <div id="pageConfirm">
   <h2>Gespeichert</h2>
-  <p>Der Eintrag wurde erfolgreich übermittelt.</p>
-  <button type="button" onclick="goHome()">Zurück zur Startseite</button>
+  <button onclick="goHome()">Zurück zur Startseite</button>
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbwTDDFrZZ2d5nXFfPdQwtE-YOs88E1lwRjeHpM87R4kNf_fZriuH8-iBPEPPrtnQNO6Qw/exec";
+
+const API_URL = "https://script.google.com/macros/s/AKfycby5SUfqIxFdpsvu44jOJM98c9KgW3025-7MMNaSi9zPuzatqeOZEKXIUpm6dU8nOzGmow/exec";
 
 let canvas, ctx;
 let drawing = false;
 let hasSigned = false;
 
-// =====================
-// INIT
-// =====================
+/* =====================
+   INIT
+===================== */
 window.onload = function () {
+
   loadDropdowns();
 
   document.getElementById("datum").valueAsDate = new Date();
@@ -104,34 +135,25 @@ window.onload = function () {
   canvas.addEventListener("touchstart", start, { passive: false });
   canvas.addEventListener("touchmove", draw, { passive: false });
   canvas.addEventListener("touchend", end);
+
+  ["klient","leistung","einheit","datum","notiz"].forEach(id => {
+    document.getElementById(id).addEventListener("change", saveState);
+  });
+
+  setTimeout(loadState, 300);
 };
 
-window.addEventListener("resize", function () {
-  if (canvas && ctx) {
-    resizeCanvas();
-  }
-});
+window.addEventListener("resize", resizeCanvas);
+window.addEventListener("orientationchange", () => setTimeout(resizeCanvas, 150));
 
-window.addEventListener("orientationchange", function () {
-  if (canvas && ctx) {
-    setTimeout(function () {
-      resizeCanvas();
-    }, 150);
-  }
-});
-
-// =====================
-// DROPDOWNS
-// =====================
+/* =====================
+   DROPDOWNS
+===================== */
 function loadDropdowns() {
   fetch(API_URL + "?t=" + new Date().getTime())
-    .then(r => {
-      if (!r.ok) {
-        throw new Error("HTTP Fehler: " + r.status);
-      }
-      return r.json();
-    })
+    .then(r => r.json())
     .then(data => {
+
       const klient = document.getElementById("klient");
       const leistung = document.getElementById("leistung");
 
@@ -150,10 +172,7 @@ function loadDropdowns() {
         opt.textContent = l;
         leistung.appendChild(opt);
       });
-    })
-    .catch(err => {
-      console.error("Dropdown Fehler:", err);
-      alert("Fehler beim Laden: " + err);
+
     });
 }
 
@@ -161,9 +180,9 @@ function reloadDropdowns() {
   loadDropdowns();
 }
 
-// =====================
-// CANVAS
-// =====================
+/* =====================
+   CANVAS (FIXED)
+===================== */
 function resizeCanvas() {
   const ratio = window.devicePixelRatio || 1;
   const rect = canvas.getBoundingClientRect();
@@ -171,28 +190,20 @@ function resizeCanvas() {
   canvas.width = rect.width * ratio;
   canvas.height = rect.height * ratio;
 
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.scale(ratio, ratio);
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 
-  ctx.lineWidth = 3;
-  ctx.lineCap = "round";
-  ctx.strokeStyle = "#000";
+  if (localStorage.getItem("signature")) {
+    const img = new Image();
+    img.onload = () => ctx.drawImage(img, 0, 0, rect.width, rect.height);
+    img.src = localStorage.getItem("signature");
+  }
 }
 
 function getPos(e) {
   const rect = canvas.getBoundingClientRect();
-
-  if (e.touches && e.touches.length > 0) {
-    return {
-      x: e.touches[0].clientX - rect.left,
-      y: e.touches[0].clientY - rect.top
-    };
-  }
-
-  return {
-    x: e.clientX - rect.left,
-    y: e.clientY - rect.top
-  };
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  return { x: clientX - rect.left, y: clientY - rect.top };
 }
 
 function start(e) {
@@ -208,10 +219,15 @@ function draw(e) {
   e.preventDefault();
 
   const pos = getPos(e);
+  ctx.lineWidth = 3;
+  ctx.lineCap = "round";
+
   ctx.lineTo(pos.x, pos.y);
   ctx.stroke();
 
   hasSigned = true;
+
+  saveState();
 }
 
 function end() {
@@ -219,15 +235,50 @@ function end() {
 }
 
 function clearCanvas() {
-  const rect = canvas.getBoundingClientRect();
-  ctx.clearRect(0, 0, rect.width, rect.height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   hasSigned = false;
+  localStorage.removeItem("signature");
 }
 
-// =====================
-// SAVE
-// =====================
+/* =====================
+   STATE (KEIN DATENVERLUST)
+===================== */
+function saveState() {
+  const state = {
+    klient: document.getElementById("klient").value,
+    leistung: document.getElementById("leistung").value,
+    einheit: document.getElementById("einheit").value,
+    datum: document.getElementById("datum").value,
+    notiz: document.getElementById("notiz").value
+  };
+
+  localStorage.setItem("formState", JSON.stringify(state));
+
+  if (hasSigned) {
+    localStorage.setItem("signature", canvas.toDataURL());
+  }
+}
+
+function loadState() {
+  const state = JSON.parse(localStorage.getItem("formState") || "{}");
+
+  if (state.klient) document.getElementById("klient").value = state.klient;
+  if (state.leistung) document.getElementById("leistung").value = state.leistung;
+  if (state.einheit) document.getElementById("einheit").value = state.einheit;
+  if (state.datum) document.getElementById("datum").value = state.datum;
+  if (state.notiz) document.getElementById("notiz").value = state.notiz;
+}
+
+function clearState() {
+  localStorage.removeItem("formState");
+  localStorage.removeItem("signature");
+}
+
+/* =====================
+   SAVE
+===================== */
 function save() {
+
   const klient = document.getElementById("klient").value;
   const leistung = document.getElementById("leistung").value;
 
@@ -249,26 +300,23 @@ function save() {
   fetch(API_URL, {
     method: "POST",
     mode: "no-cors",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data)
   })
   .then(() => {
+    clearState();
     document.getElementById("pageForm").style.display = "none";
     document.getElementById("pageConfirm").style.display = "block";
-  })
-  .catch(err => {
-    alert("Fehler: " + err);
   });
 }
 
-// =====================
-// STARTSEITE
-// =====================
+/* =====================
+   HOME
+===================== */
 function goHome() {
   location.reload();
 }
+
 </script>
 
 </body>
