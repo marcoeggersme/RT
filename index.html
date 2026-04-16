@@ -12,23 +12,29 @@ body{
   background:#ffffff;
 }
 
+/* HEADLINE */
+h2{
+  cursor:pointer;
+}
+
 /* FORM */
-select,input,textarea,button{
+.form{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+select,input,textarea{
   width:100%;
   padding:14px;
-  margin-bottom:12px;
   border-radius:12px;
   border:1px solid #ddd;
   font-size:16px;
+  box-sizing:border-box;
 }
 
-#einheit{text-align:center;}
-
-canvas{
-  width:100%;
-  height:200px;
-  border:2px solid #ccc;
-  border-radius:18px;
+input[type="date"]{
+  height:52px;
 }
 
 /* BUTTONS */
@@ -37,18 +43,39 @@ canvas{
   gap:10px;
 }
 
-.btn{
+button{
   flex:1;
-  font-weight:bold;
+  height:52px;
+  border-radius:12px;
   border:none;
+  font-size:16px;
+  font-weight:bold;
 }
 
-.btn-save{
-  background:#c7f9cc;
+.btn-save{background:#c7f9cc;}
+.btn-clear{background:#e7f0ff;}
+
+/* CANVAS */
+canvas{
+  width:100%;
+  height:200px;
+  border:2px solid #ccc;
+  border-radius:18px;
 }
 
-.btn-clear{
-  background:#e7f0ff;
+/* ===== QUERFORMAT ===== */
+@media (orientation: landscape){
+  .form{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+
+  textarea,
+  canvas,
+  .btn-row{
+    grid-column:1 / span 2;
+  }
 }
 
 /* ===== OVERLAY ===== */
@@ -65,11 +92,6 @@ canvas{
   z-index:9999;
 }
 
-.overlay-box{
-  text-align:center;
-}
-
-/* Pferd Animation */
 .horse{
   font-size:60px;
   animation:run 1s infinite alternate ease-in-out;
@@ -80,7 +102,6 @@ canvas{
   to{transform:translateX(10px);}
 }
 
-/* Progress Bar */
 .progress{
   width:220px;
   height:10px;
@@ -100,7 +121,6 @@ canvas{
 .status{
   font-size:16px;
   color:#555;
-  font-weight:500;
 }
 
 /* CONFIRM */
@@ -109,42 +129,40 @@ canvas{
   text-align:center;
   margin-top:40px;
 }
-
-button{
-  cursor:pointer;
-}
 </style>
 </head>
 
 <body>
 
 <div id="form">
-  <h2 onclick="gohome()">Leistung erfassen</h2>
+  <h2 onclick="goHome()">Leistung erfassen</h2>
 
-  <select id="klient"></select>
-  <select id="leistung"></select>
+  <div class="form">
+    <select id="klient"></select>
+    <select id="leistung"></select>
 
-  <input id="einheit" value="1">
-  <input id="datum" type="date">
+    <input id="einheit" value="1">
+    <input id="datum" type="date">
 
-  <textarea id="notiz" placeholder="Notiz"></textarea>
+    <textarea id="notiz" placeholder="Notiz"></textarea>
 
-  <canvas id="canvas"></canvas>
+    <canvas id="canvas"></canvas>
 
-  <div class="btn-row">
-    <button class="btn btn-clear" onclick="clearCanvas()">Löschen</button>
-    <button class="btn btn-save" onclick="save()">Speichern</button>
+    <div class="btn-row">
+      <button class="btn-clear" onclick="clearCanvas()">Löschen</button>
+      <button class="btn-save" onclick="save()">Speichern</button>
+    </div>
   </div>
 </div>
 
 <div id="confirm">
   <h2>Gespeichert</h2>
-  <button onclick="location.reload()">Zurück</button>
+  <button onclick="goHome()">Zurück</button>
 </div>
 
 <!-- OVERLAY -->
 <div id="overlay">
-  <div class="overlay-box">
+  <div style="text-align:center;">
     <div class="horse">🐎</div>
 
     <div class="progress">
@@ -156,35 +174,48 @@ button{
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbwTDDFrZZ2d5nXFfPdQwtE-YOs88E1lwRjeHpM87R4kNf_fZriuH8-iBPEPPrtnQNO6Qw/exec";
+const API_URL = "DEINE_URL_HIER";
 
-let canvas = document.getElementById("canvas");
-let ctx = canvas.getContext("2d");
-let drawing = false;
+/* =====================
+   INIT
+===================== */
+window.onload = function(){
+
+  // Datum vorbelegen
+  const d = new Date();
+  const iso = d.toISOString().split("T")[0];
+  document.getElementById("datum").value = iso;
+
+  resizeCanvas();
+  loadDropdowns();
+};
 
 /* =====================
    CANVAS
 ===================== */
+let canvas=document.getElementById("canvas");
+let ctx=canvas.getContext("2d");
+let drawing=false;
+
 function resizeCanvas(){
   canvas.width = canvas.offsetWidth;
   canvas.height = canvas.offsetHeight;
 }
-resizeCanvas();
-window.addEventListener("resize", resizeCanvas);
+window.addEventListener("resize",resizeCanvas);
 
-canvas.addEventListener("mousedown", e=>{
+canvas.addEventListener("mousedown",e=>{
   drawing=true;
   ctx.beginPath();
   ctx.moveTo(e.offsetX,e.offsetY);
 });
 
-canvas.addEventListener("mousemove", e=>{
+canvas.addEventListener("mousemove",e=>{
   if(!drawing)return;
   ctx.lineTo(e.offsetX,e.offsetY);
   ctx.stroke();
 });
 
-canvas.addEventListener("mouseup", ()=>drawing=false);
+canvas.addEventListener("mouseup",()=>drawing=false);
 
 function clearCanvas(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -193,16 +224,17 @@ function clearCanvas(){
 /* =====================
    DROPDOWN
 ===================== */
-function reload(){
-  fetch(API_URL)
+function loadDropdowns(){
+  fetch(API_URL+"?t="+Date.now())
   .then(r=>r.json())
   .then(data=>{
     let k=document.getElementById("klient");
     let l=document.getElementById("leistung");
 
-    k.innerHTML="<option>Klient wählen</option>";
+    k.innerHTML="<option value=''>Klient wählen</option>";
     data.klienten.forEach(v=>{
       let o=document.createElement("option");
+      o.value=v;
       o.text=v;
       k.add(o);
     });
@@ -210,6 +242,7 @@ function reload(){
     l.innerHTML="";
     data.leistungen.forEach(v=>{
       let o=document.createElement("option");
+      o.value=v;
       o.text=v;
       l.add(o);
     });
@@ -218,10 +251,8 @@ function reload(){
   });
 }
 
-reload();
-
 /* =====================
-   PROGRESS STEUERUNG
+   PROGRESS
 ===================== */
 function setProgress(p,text){
   document.getElementById("bar").style.width=p+"%";
@@ -247,13 +278,13 @@ function save(){
 
   setTimeout(()=>{
 
-    setProgress(30,"Signatur wird verarbeitet...");
+    setProgress(40,"Signatur wird verarbeitet...");
 
-    let signature = canvas.toDataURL();
+    let signature=canvas.toDataURL();
 
     setTimeout(()=>{
 
-      setProgress(60,"Übertragung läuft...");
+      setProgress(70,"Übertragung läuft...");
 
       fetch(API_URL,{
         method:"POST",
@@ -269,27 +300,30 @@ function save(){
       })
       .then(()=>{
 
-        setProgress(90,"Speichern abgeschlossen...");
+        setProgress(100,"Fertig");
 
         setTimeout(()=>{
-          setProgress(100,"Fertig");
-
           document.getElementById("overlay").style.display="none";
-
           document.getElementById("form").style.display="none";
           document.getElementById("confirm").style.display="block";
-
         },400);
 
       })
-      .catch(err=>{
+      .catch(()=>{
         document.getElementById("overlay").style.display="none";
-        alert("Fehler");
+        alert("Fehler beim Speichern");
       });
 
     },300);
 
   },200);
+}
+
+/* =====================
+   HOME
+===================== */
+function goHome(){
+  location.reload();
 }
 </script>
 
