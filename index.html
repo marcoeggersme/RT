@@ -264,9 +264,24 @@ canvas{
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycby6TX3IP0IomYvlbJyq2P22qRwSVAcMGk5HRUErFrDGuLdRGday9gIMRBKLzYRUvQbORw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbx7A4vPkimtMp9pKI_7lRXPORr8cGPSybw58tdwn7ysOT4aJ2T0zlJYKwHk9A-8vcR9_w/exec";
 const PAYPAL_EMAIL = "daniela.schroeder.2003@gmail.com";
 const CACHE_NAME = "reittherapie-static-v2";
+
+// === OFFLINE QUEUE ===
+function saveOffline(data) {
+  let queue = JSON.parse(localStorage.getItem("offlineQueue") || "[]");
+  queue.push(data);
+  localStorage.setItem("offlineQueue", JSON.stringify(queue));
+}
+
+function getOfflineQueue() {
+  return JSON.parse(localStorage.getItem("offlineQueue") || "[]");
+}
+
+function clearOfflineQueue() {
+  localStorage.removeItem("offlineQueue");
+}
 
 /* INIT */
 window.onload = function(){
