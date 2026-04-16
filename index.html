@@ -3,24 +3,21 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 
 <style>
-body { font-family: Arial; padding: 20px; }
+body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  margin: 0;
+}
 
 h2 {
   cursor: pointer;
-  margin-bottom: 10px;
-}
-
-/* 🔥 Querformat Header kompakter */
-@media (orientation: landscape) {
-  body {
-    padding: 10px;
-  }
-  h2 {
-    font-size: 18px;
-    margin-bottom: 5px;
-  }
+  margin: 0 0 10px 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .form-grid {
@@ -29,15 +26,31 @@ h2 {
   gap: 10px;
 }
 
-select, input, textarea {
+select, input, textarea, button {
   width: 100%;
   padding: 10px;
   font-size: 16px;
   box-sizing: border-box;
+  border-radius: 8px;
+}
+
+select, input, textarea {
+  border: 1px solid #999;
+}
+
+button {
+  border: 1px solid #999;
+  background: #f5f5f5;
+  min-height: 42px;
 }
 
 #einheit {
   text-align: center;
+}
+
+textarea {
+  min-height: 84px;
+  resize: vertical;
 }
 
 canvas {
@@ -47,9 +60,9 @@ canvas {
   height: 200px;
   touch-action: none;
   background: #fff;
+  display: block;
 }
 
-/* 🔥 Button-Reihe */
 .btn-row {
   display: flex;
   gap: 10px;
@@ -57,28 +70,7 @@ canvas {
 
 .btn-row button {
   flex: 1;
-}
-
-/* Querformat Layout */
-@media (orientation: landscape) {
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-
-  textarea {
-    grid-column: span 2;
-  }
-
-  canvas {
-    grid-column: span 2;
-    height: 200px;
-  }
-
-  .btn-row {
-    grid-column: span 2;
-  }
+  margin: 0;
 }
 
 #pageConfirm {
@@ -86,20 +78,51 @@ canvas {
   text-align: center;
   margin-top: 40px;
 }
+
+/* Querformat kompakter */
+@media (orientation: landscape) {
+  body {
+    padding: 10px;
+  }
+
+  h2 {
+    font-size: 18px;
+    margin-bottom: 6px;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  textarea,
+  canvas,
+  .btn-row {
+    grid-column: span 2;
+  }
+
+  textarea {
+    min-height: 64px;
+  }
+
+  canvas {
+    height: 180px;
+  }
+}
 </style>
 </head>
 
 <body>
 
 <div id="pageForm">
-  <h2 onclick="reloadDropdowns()">Leistung erfassen</h2>
+  <h2 onclick="reloadDropdowns()" title="Dropdowns neu laden">Leistung erfassen</h2>
 
   <div class="form-grid">
-
     <select id="klient"></select>
     <select id="leistung"></select>
 
-    <input id="einheit" value="1">
+    <input id="einheit" value="1" placeholder="Einheit">
     <input id="datum" type="date">
 
     <textarea id="notiz" placeholder="Notiz"></textarea>
@@ -107,20 +130,18 @@ canvas {
     <canvas id="canvas"></canvas>
 
     <div class="btn-row">
-      <button onclick="clearCanvas()">Unterschrift löschen</button>
-      <button onclick="save()">Speichern</button>
+      <button type="button" onclick="clearCanvas()">Unterschrift löschen</button>
+      <button type="button" onclick="save()">Speichern</button>
     </div>
-
   </div>
 </div>
 
 <div id="pageConfirm">
   <h2>Gespeichert</h2>
-  <button onclick="goHome()">Zurück zur Startseite</button>
+  <button type="button" onclick="goHome()">Zurück zur Startseite</button>
 </div>
 
 <script>
-
 const API_URL = "https://script.google.com/macros/s/AKfycby5SUfqIxFdpsvu44jOJM98c9KgW3025-7MMNaSi9zPuzatqeOZEKXIUpm6dU8nOzGmow/exec";
 
 let canvas, ctx;
@@ -131,16 +152,22 @@ let hasSigned = false;
    INIT
 ===================== */
 window.onload = function () {
-
-  loadDropdowns();
-
-  document.getElementById("datum").valueAsDate = new Date();
-
   canvas = document.getElementById("canvas");
   ctx = canvas.getContext("2d");
 
-  resizeCanvas();
+  document.getElementById("datum").valueAsDate = new Date();
 
+  resizeCanvas();
+  bindCanvasEvents();
+  bindFieldEvents();
+
+  loadDropdowns(true);
+};
+
+window.addEventListener("resize", resizeCanvas);
+window.addEventListener("orientationchange", () => setTimeout(resizeCanvas, 150));
+
+function bindCanvasEvents() {
   canvas.addEventListener("mousedown", start);
   canvas.addEventListener("mousemove", draw);
   canvas.addEventListener("mouseup", end);
@@ -149,25 +176,30 @@ window.onload = function () {
   canvas.addEventListener("touchstart", start, { passive: false });
   canvas.addEventListener("touchmove", draw, { passive: false });
   canvas.addEventListener("touchend", end);
+}
 
-  ["klient","leistung","einheit","datum","notiz"].forEach(id => {
+function bindFieldEvents() {
+  ["klient", "leistung", "einheit", "datum", "notiz"].forEach(id => {
     document.getElementById(id).addEventListener("change", saveState);
+    document.getElementById(id).addEventListener("input", saveState);
   });
-
-  setTimeout(loadState, 300);
-};
-
-window.addEventListener("resize", resizeCanvas);
-window.addEventListener("orientationchange", () => setTimeout(resizeCanvas, 150));
+}
 
 /* =====================
-   DROPDOWNS + DEFAULT
+   DROPDOWNS
 ===================== */
-function loadDropdowns() {
-  fetch(API_URL + "?t=" + new Date().getTime())
-    .then(r => r.json())
-    .then(data => {
+function loadDropdowns(isInitialLoad = false) {
+  const oldKlient = document.getElementById("klient").value;
+  const oldLeistung = document.getElementById("leistung").value;
 
+  fetch(API_URL + "?t=" + new Date().getTime())
+    .then(r => {
+      if (!r.ok) {
+        throw new Error("HTTP Fehler: " + r.status);
+      }
+      return r.json();
+    })
+    .then(data => {
       const klient = document.getElementById("klient");
       const leistung = document.getElementById("leistung");
 
@@ -184,26 +216,41 @@ function loadDropdowns() {
         const opt = document.createElement("option");
         opt.value = l;
         opt.textContent = l;
-
-        // 🔥 DEFAULT
-        if (l.toLowerCase() === "reittherapie") {
-          opt.selected = true;
-        }
-
         leistung.appendChild(opt);
       });
 
+      if (oldKlient && Array.from(klient.options).some(o => o.value === oldKlient)) {
+        klient.value = oldKlient;
+      }
+
+      if (oldLeistung && Array.from(leistung.options).some(o => o.value === oldLeistung)) {
+        leistung.value = oldLeistung;
+      } else if (Array.from(leistung.options).some(o => o.value.toLowerCase() === "reittherapie")) {
+        leistung.value = Array.from(leistung.options).find(o => o.value.toLowerCase() === "reittherapie").value;
+      }
+
+      if (isInitialLoad) {
+        setTimeout(loadState, 150);
+      }
+
+      saveState();
+    })
+    .catch(err => {
+      console.error("Dropdown Fehler:", err);
+      alert("Fehler beim Laden: " + err.message);
     });
 }
 
 function reloadDropdowns() {
-  loadDropdowns();
+  loadDropdowns(false);
 }
 
 /* =====================
    CANVAS
 ===================== */
 function resizeCanvas() {
+  if (!canvas || !ctx) return;
+
   const ratio = window.devicePixelRatio || 1;
   const rect = canvas.getBoundingClientRect();
 
@@ -211,19 +258,31 @@ function resizeCanvas() {
   canvas.height = rect.height * ratio;
 
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  ctx.lineWidth = 3;
+  ctx.lineCap = "round";
+  ctx.strokeStyle = "#000";
 
-  if (localStorage.getItem("signature")) {
+  const savedSignature = localStorage.getItem("signature");
+  if (savedSignature) {
     const img = new Image();
-    img.onload = () => ctx.drawImage(img, 0, 0, rect.width, rect.height);
-    img.src = localStorage.getItem("signature");
+    img.onload = () => {
+      ctx.clearRect(0, 0, rect.width, rect.height);
+      ctx.drawImage(img, 0, 0, rect.width, rect.height);
+    };
+    img.src = savedSignature;
+    hasSigned = true;
   }
 }
 
 function getPos(e) {
   const rect = canvas.getBoundingClientRect();
-  const x = e.touches ? e.touches[0].clientX : e.clientX;
-  const y = e.touches ? e.touches[0].clientY : e.clientY;
-  return { x: x - rect.left, y: y - rect.top };
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+  return {
+    x: clientX - rect.left,
+    y: clientY - rect.top
+  };
 }
 
 function start(e) {
@@ -239,9 +298,6 @@ function draw(e) {
   e.preventDefault();
 
   const pos = getPos(e);
-  ctx.lineWidth = 3;
-  ctx.lineCap = "round";
-
   ctx.lineTo(pos.x, pos.y);
   ctx.stroke();
 
@@ -254,7 +310,8 @@ function end() {
 }
 
 function clearCanvas() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const rect = canvas.getBoundingClientRect();
+  ctx.clearRect(0, 0, rect.width, rect.height);
   hasSigned = false;
   localStorage.removeItem("signature");
 }
@@ -274,7 +331,7 @@ function saveState() {
   localStorage.setItem("formState", JSON.stringify(state));
 
   if (hasSigned) {
-    localStorage.setItem("signature", canvas.toDataURL());
+    localStorage.setItem("signature", canvas.toDataURL("image/png"));
   }
 }
 
@@ -297,7 +354,6 @@ function clearState() {
    SAVE
 ===================== */
 function save() {
-
   const klient = document.getElementById("klient").value;
   const leistung = document.getElementById("leistung").value;
 
@@ -319,13 +375,18 @@ function save() {
   fetch(API_URL, {
     method: "POST",
     mode: "no-cors",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify(data)
   })
   .then(() => {
     clearState();
     document.getElementById("pageForm").style.display = "none";
     document.getElementById("pageConfirm").style.display = "block";
+  })
+  .catch(err => {
+    alert("Fehler: " + err);
   });
 }
 
@@ -335,7 +396,6 @@ function save() {
 function goHome() {
   location.reload();
 }
-
 </script>
 
 </body>
