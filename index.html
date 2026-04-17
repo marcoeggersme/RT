@@ -369,7 +369,7 @@ function normalizeAmount(value) {
 function buildPayPalNote() {
   const klient = document.getElementById("klient").value || "";
   const datumRaw = document.getElementById("datum").value || "";
-  const einheit = document.getElementById("einheit").value || "1";
+  const einheit = document.getElementById("einheit").value || "";
 
   let datum = datumRaw;
   if (datumRaw) {
