@@ -1,224 +1,223 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<!-- ICONS -->
-<link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
-<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
+  <!-- ICONS -->
+  <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
 
-<!-- PWA -->
-<link rel="manifest" href="./manifest.json?v=2">
+  <!-- PWA -->
+  <link rel="manifest" href="./manifest.json?v=2">
 
-<!-- MOBILE APP -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Reittherapie">
-<meta name="theme-color" content="#b7e4c7">
-<link rel="icon" href="./icon-192.png?v=2">
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
+  <!-- MOBILE APP -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Reittherapie">
+  <meta name="theme-color" content="#b7e4c7">
+  <link rel="icon" href="./icon-192.png?v=2">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
 
-<style>
-body{
-  font-family: Arial, sans-serif;
-  margin:0;
-  padding:20px;
-  background:#ffffff;
-  color:#2f2f2f;
+  <style>
+    body{
+      font-family: Arial, sans-serif;
+      margin:0;
+      padding:20px;
+      background:#ffffff;
+      color:#2f2f2f;
+      display:flex;
+      justify-content:center;
+    }
 
-  display:flex;
-  justify-content:center;
-}
+    .form-wrapper{
+      width:100%;
+      max-width:520px;
+    }
 
-.form-wrapper{
-  width:100%;
-  max-width:520px;
-}
+    h2{
+      cursor:pointer;
+      color:#2f2f2f;
+    }
 
-h2{
-  cursor:pointer;
-  color:#2f2f2f;
-}
+    /* FORM */
+    .form{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
 
-/* FORM */
-.form{
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-}
+    select,input,textarea{
+      width:100%;
+      min-width:0;
+      height:58px;
+      font-size:17px;
+      padding:0 14px;
+      border-radius:12px;
+      border:1px solid #cfead6;
+      background:#eaf7ec;
+      color:#2f2f2f;
+      box-sizing:border-box;
+    }
 
-select,input,textarea{
-  width:100%;
-  min-width:0;
-  height:58px;
-  font-size:17px;
-  padding:0 14px;
-  border-radius:12px;
-  border:1px solid #cfead6;
-  background:#eaf7ec;
-  color:#2f2f2f;
-  box-sizing:border-box;
-}
+    textarea{
+      height:80px;
+      padding-top:12px;
+      resize:vertical;
+    }
 
-textarea{
-  height:80px;
-  padding-top:12px;
-  resize:vertical;
-}
+    #einheit{
+      text-align:center;
+      font-weight:600;
+    }
 
-#einheit{
-  text-align:center;
-  font-weight:600;
-}
+    input[type="date"]{
+      appearance:none;
+      -webkit-appearance:none;
+      text-align:center;
+      font-weight:500;
+      width:100%;
+      min-width:0;
+      max-width:100%;
+    }
 
-input[type="date"]{
-  appearance:none;
-  -webkit-appearance:none;
-  text-align:center;
-  font-weight:500;
-  width:100%;
-  min-width:0;
-  max-width:100%;
-}
+    /* BUTTONS */
+    .btn-row{
+      display:flex;
+      gap:10px;
+    }
 
-/* BUTTONS */
-.btn-row{
-  display:flex;
-  gap:10px;
-}
+    button{
+      flex:1;
+      height:52px;
+      border-radius:12px;
+      border:none;
+      font-size:16px;
+      font-weight:bold;
+      color:#2f2f2f;
+      cursor:pointer;
+    }
 
-button{
-  flex:1;
-  height:52px;
-  border-radius:12px;
-  border:none;
-  font-size:16px;
-  font-weight:bold;
-  color:#2f2f2f;
-  cursor:pointer;
-}
+    .btn-clear{
+      background:#fde2e2;
+    }
 
-.btn-clear{
-  background:#fde2e2;
-}
+    .btn-save{
+      background:#b7e4c7;
+    }
 
-.btn-save{
-  background:#b7e4c7;
-}
+    html, body {
+      overscroll-behavior: contain;
+    }
 
-html, body {
-  overscroll-behavior: contain;
-}
+    /* CANVAS */
+    canvas{
+      width:100%;
+      height:200px;
+      border:2px solid #cfead6;
+      border-radius:18px;
+      background:#f6fbf7;
+      touch-action:none;
+      display:block;
+    }
 
-/* CANVAS */
-canvas{
-  width:100%;
-  height:200px;
-  border:2px solid #cfead6;
-  border-radius:18px;
-  background:#f6fbf7;
-  touch-action:none;
-  display:block;
-}
+    /* QUERFORMAT: 2 Spalten */
+    @media (orientation: landscape){
+      .form{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:10px;
+        align-items:start;
+      }
 
-/* QUERFORMAT: 2 Spalten */
-@media (orientation: landscape){
-  .form{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-    align-items:start;
-  }
+      textarea,
+      canvas,
+      .btn-row{
+        grid-column:1 / span 2;
+      }
+    }
 
-  textarea,
-  canvas,
-  .btn-row{
-    grid-column:1 / span 2;
-  }
-}
+    /* OVERLAY */
+    #overlay{
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background:rgba(255,255,255,0.95);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:9999;
+    }
 
-/* OVERLAY */
-#overlay{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:rgba(255,255,255,0.95);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:9999;
-}
+    .horse{
+      font-size:60px;
+      animation:run 1s infinite alternate ease-in-out;
+    }
 
-.horse{
-  font-size:60px;
-  animation:run 1s infinite alternate ease-in-out;
-}
+    @keyframes run{
+      from{transform:translateX(-10px);}
+      to{transform:translateX(10px);}
+    }
 
-@keyframes run{
-  from{transform:translateX(-10px);}
-  to{transform:translateX(10px);}
-}
+    .progress{
+      width:220px;
+      height:10px;
+      background:#eee;
+      border-radius:10px;
+      margin:20px auto;
+      overflow:hidden;
+    }
 
-.progress{
-  width:220px;
-  height:10px;
-  background:#eee;
-  border-radius:10px;
-  margin:20px auto;
-  overflow:hidden;
-}
+    .progress-bar{
+      height:100%;
+      width:0%;
+      background:#95d5b2;
+      transition:width .4s;
+    }
 
-.progress-bar{
-  height:100%;
-  width:0%;
-  background:#95d5b2;
-  transition:width .4s;
-}
+    .status{
+      text-align:center;
+      color:#2f2f2f;
+    }
 
-.status{
-  text-align:center;
-  color:#2f2f2f;
-}
+    /* CONFIRM */
+    #confirm{
+      display:none;
+      text-align:center;
+      margin-top:40px;
+      color:#2f2f2f;
+    }
 
-/* CONFIRM */
-#confirm{
-  display:none;
-  text-align:center;
-  margin-top:40px;
-  color:#2f2f2f;
-}
+    .confirm-inner{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:14px;
+    }
 
-.confirm-inner{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:14px;
-}
+    #paypalQR{
+      display:block;
+      width:200px;
+      max-width:80vw;
+      margin:0 auto;
+    }
 
-#paypalQR{
-  display:block;
-  width:200px;
-  max-width:80vw;
-  margin:0 auto;
-}
+    .confirm-button-wrap{
+      display:flex;
+      justify-content:center;
+      width:100%;
+    }
 
-.confirm-button-wrap{
-  display:flex;
-  justify-content:center;
-  width:100%;
-}
-
-.confirm-button-wrap button{
-  flex:none;
-  width:220px;
-  max-width:80vw;
-}
-</style>
+    .confirm-button-wrap button{
+      flex:none;
+      width:220px;
+      max-width:80vw;
+    }
+  </style>
 </head>
 
 <body>
@@ -230,7 +229,7 @@ canvas{
     <select id="klient"></select>
     <select id="leistung"></select>
 
-    <input id="einheit" value="1">
+    <input id="einheit" value="1" inputmode="decimal">
     <input id="datum" type="date">
 
     <textarea id="notiz" placeholder="Notiz"></textarea>
@@ -265,25 +264,9 @@ canvas{
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbyeAWk6PD3RLWNyFVerXMKLWOMp_fLIEm-MRAUwmSPz9jtrMbc8IK5m-K0_tMtUgYI7WQ/exec";
-const CACHE_NAME = "reittherapie-static-v2";
-
-// === OFFLINE QUEUE ===
-function saveOffline(data) {
-  let queue = JSON.parse(localStorage.getItem("offlineQueue") || "[]");
-  queue.push(data);
-  localStorage.setItem("offlineQueue", JSON.stringify(queue));
-}
-
-function getOfflineQueue() {
-  return JSON.parse(localStorage.getItem("offlineQueue") || "[]");
-}
-
-function clearOfflineQueue() {
-  localStorage.removeItem("offlineQueue");
-}
 
 /* INIT */
-window.onload = function(){
+window.onload = function () {
   const d = new Date();
   document.getElementById("datum").value = d.toISOString().split("T")[0];
   resizeCanvas();
@@ -291,62 +274,62 @@ window.onload = function(){
 };
 
 /* CANVAS */
-let canvas = document.getElementById("canvas");
-let ctx = canvas.getContext("2d");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
 let drawing = false;
 let hasSignature = false;
 
-function resizeCanvas(){
+function resizeCanvas() {
   const ratio = window.devicePixelRatio || 1;
   const rect = canvas.getBoundingClientRect();
 
   canvas.width = rect.width * ratio;
   canvas.height = rect.height * ratio;
 
-  ctx.setTransform(ratio,0,0,ratio,0,0);
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
   ctx.lineWidth = 3;
   ctx.lineCap = "round";
   ctx.strokeStyle = "#2f2f2f";
 }
+
 window.addEventListener("resize", resizeCanvas);
 canvas.addEventListener("touchcancel", end);
 
-function getPos(e){
+function getPos(e) {
   const rect = canvas.getBoundingClientRect();
 
-  if(e.touches && e.touches.length){
+  if (e.touches && e.touches.length) {
     return {
       x: e.touches[0].clientX - rect.left,
       y: e.touches[0].clientY - rect.top
     };
-  } else {
-    return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    };
   }
+
+  return {
+    x: e.clientX - rect.left,
+    y: e.clientY - rect.top
+  };
 }
 
-function start(e){
+function start(e) {
   e.preventDefault();
   drawing = true;
   const pos = getPos(e);
   ctx.beginPath();
-  ctx.moveTo(pos.x,pos.y);
+  ctx.moveTo(pos.x, pos.y);
 }
 
-function draw(e){
-  if(!drawing) return;
+function draw(e) {
+  if (!drawing) return;
   e.preventDefault();
 
   const pos = getPos(e);
-  ctx.lineTo(pos.x,pos.y);
+  ctx.lineTo(pos.x, pos.y);
   ctx.stroke();
-
-  hasSignature = true; // <-- WICHTIG
+  hasSignature = true;
 }
 
-function end(){
+function end() {
   drawing = false;
 }
 
@@ -355,76 +338,101 @@ canvas.addEventListener("mousemove", draw);
 canvas.addEventListener("mouseup", end);
 canvas.addEventListener("mouseleave", end);
 
-canvas.addEventListener("touchstart", start, {passive:false});
-canvas.addEventListener("touchmove", draw, {passive:false});
+canvas.addEventListener("touchstart", start, { passive: false });
+canvas.addEventListener("touchmove", draw, { passive: false });
 canvas.addEventListener("touchend", end);
 
-function clearCanvas(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  hasSignature = false; // <-- Reset
+function clearCanvas() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  hasSignature = false;
 }
 
-/* DROPDOWN – ohne Cache */
-function loadDropdowns(){
+/* UI HELPERS */
+function setProgress(percent, text) {
+  document.getElementById("bar").style.width = percent + "%";
+  document.getElementById("status").innerText = text;
+}
 
-  const url = API_URL + "?action=getDropdowns&t=" + new Date().getTime();
+function showConfirm() {
+  document.getElementById("overlay").style.display = "none";
+  document.getElementById("form").style.display = "none";
+  document.getElementById("confirm").style.display = "block";
+}
+
+function normalizeAmount(value) {
+  const raw = String(value || "").trim().replace(",", ".");
+  const num = Number(raw);
+  if (!isFinite(num) || num <= 0) return "1";
+  return String(num);
+}
+
+function buildPayPalNote() {
+  const klient = document.getElementById("klient").value || "";
+  const datumRaw = document.getElementById("datum").value || "";
+  const einheit = document.getElementById("einheit").value || "1";
+
+  let datum = datumRaw;
+  if (datumRaw) {
+    const d = new Date(datumRaw);
+    if (!isNaN(d.getTime())) {
+      datum = d.toLocaleDateString("de-DE");
+    }
+  }
+
+  const note = `RT | ${klient} | ${datum} | ${einheit} EH`;
+  return note.substring(0, 120);
+}
+
+/* DROPDOWNS */
+function loadDropdowns() {
+  const url = API_URL + "?action=getDropdowns&t=" + Date.now();
 
   fetch(url, {
-    method: "GET"
+    method: "GET",
+    cache: "no-store"
   })
   .then(response => {
-
     if (!response.ok) {
       throw new Error("HTTP Status " + response.status);
     }
-
     return response.json();
   })
   .then(data => {
+    const klientSelect = document.getElementById("klient");
+    const leistungSelect = document.getElementById("leistung");
 
-    let k = document.getElementById("klient");
-    let l = document.getElementById("leistung");
-
-    k.innerHTML = "<option value=''>Klient wählen</option>";
-    l.innerHTML = "";
-
-    if (!data || !data.klienten || !data.leistungen) {
+    if (!data || !Array.isArray(data.klienten) || !Array.isArray(data.leistungen)) {
       throw new Error("Ungültige Serverantwort");
     }
 
+    klientSelect.innerHTML = "<option value=''>Klient wählen</option>";
+    leistungSelect.innerHTML = "<option value=''>Leistung wählen</option>";
+
     data.klienten.forEach(v => {
-      let o = document.createElement("option");
+      const o = document.createElement("option");
       o.value = v;
       o.text = v;
-      k.add(o);
+      klientSelect.add(o);
     });
 
     data.leistungen.forEach(v => {
-      let o = document.createElement("option");
+      const o = document.createElement("option");
       o.value = v;
       o.text = v;
-      l.add(o);
+      leistungSelect.add(o);
     });
 
-    // Standardwert setzen
-    if ([...l.options].some(o => o.value === "Reittherapie")) {
-      l.value = "Reittherapie";
+    if ([...leistungSelect.options].some(o => o.value === "Reittherapie")) {
+      leistungSelect.value = "Reittherapie";
     }
-
   })
   .catch(err => {
-
     console.error("Dropdown Fehler:", err);
-
-    // 👇 KEIN harter Abbruch mehr
-    setTimeout(() => {
-      loadDropdowns();
-    }, 1500);
-
+    setTimeout(loadDropdowns, 1500);
   });
 }
 
-/* QR GENERATOR */
+/* PAYPAL QR */
 function buildPayPalQRUrl(amount, note) {
   const url =
     API_URL +
@@ -451,118 +459,89 @@ function buildPayPalQRUrl(amount, note) {
   });
 }
 
-/* PROGRESS */
-function setProgress(p,t){
-  document.getElementById("bar").style.width=p+"%";
-  document.getElementById("status").innerText=t;
-}
-
 /* SAVE */
-function save(){
+function save() {
+  const klient = document.getElementById("klient").value;
+  const leistung = document.getElementById("leistung").value;
+  const einheit = normalizeAmount(document.getElementById("einheit").value);
+  const datum = document.getElementById("datum").value;
+  const notiz = document.getElementById("notiz").value;
 
-  let klient=document.getElementById("klient").value;
-  let leistung=document.getElementById("leistung").value;
-
-  if(!klient||!leistung){
+  if (!klient || !leistung) {
     alert("Bitte auswählen");
     return;
   }
 
-  document.getElementById("overlay").style.display="flex";
-  setProgress(10,"Daten werden vorbereitet...");
+  document.getElementById("overlay").style.display = "flex";
+  setProgress(10, "Daten werden vorbereitet...");
 
-  setTimeout(()=>{
-    setProgress(40,"Signatur wird verarbeitet...");
-    let signature = null;
-
-  if(hasSignature){
+  let signature = null;
+  if (hasSignature) {
+    setProgress(40, "Signatur wird verarbeitet...");
     signature = canvas.toDataURL("image/png");
+  } else {
+    setProgress(40, "Ohne Signatur...");
   }
 
-    setTimeout(()=>{
-      setProgress(70,"Übertragung läuft...");
+  const payload = {
+    type: "form_input",
+    klient: klient,
+    leistung: leistung,
+    einheit: einheit,
+    datum: datum,
+    notiz: notiz,
+    signature: signature
+  };
 
-      fetch(API_URL,{
-        method:"POST",
-        mode:"no-cors",
-        headers: {
-          "Content-Type": "application/json"
-        },
-       body: JSON.stringify({
-        type: "form_input",
-        klient,
-        leistung,
-        einheit:document.getElementById("einheit").value,
-        datum:document.getElementById("datum").value,
-        notiz:document.getElementById("notiz").value,
-        signature
-      })
-      })
-      .then(() => {
-  const amount = document.getElementById("einheit").value || 1;
-  
-  const klient = document.getElementById("klient").value || "";
-  const datumRaw = document.getElementById("datum").value || "";
-  const einheit = document.getElementById("einheit").value || "1";
-  
-  // Datum formatieren (dd.mm.yyyy)
-  let datum = datumRaw;
-  if (datumRaw) {
-    const d = new Date(datumRaw);
-    datum = d.toLocaleDateString("de-DE");
-  }
-  
-  // Kontext bauen
-  const note = `RT | ${klient} | ${datum} | ${einheit} EH`;
-  const safeNote = note.substring(0, 120);
-  return buildPayPalQRUrl(amount, safeNote);
+  const safeNote = buildPayPalNote();
 
-  setProgress(85, "PayPal-Code wird erzeugt...");
+  setProgress(70, "Übertragung läuft...");
 
-  return buildPayPalQRUrl(amount, note)
-    .then(paypalData => {
-      document.getElementById("paypalQR").src = paypalData.qrUrl;
+  fetch(API_URL + "?t=" + Date.now(), {
+    method: "POST",
+    mode: "no-cors",
+    cache: "no-store",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(() => {
+    setProgress(85, "PayPal-Code wird erzeugt...");
+    return buildPayPalQRUrl(einheit, safeNote);
+  })
+  .then(paypalData => {
+    document.getElementById("paypalQR").src = paypalData.qrUrl;
+    setProgress(100, "Fertig");
 
-      setProgress(100, "Fertig");
+    setTimeout(() => {
+      showConfirm();
+    }, 400);
+  })
+  .catch(err => {
+    console.error("Speicher-/PayPal-Fehler:", err);
 
-      setTimeout(() => {
-        document.getElementById("overlay").style.display = "none";
-        document.getElementById("form").style.display = "none";
-        document.getElementById("confirm").style.display = "block";
-      }, 400);
-    })
-    .catch(err => {
-      console.error("PayPal Fehler:", err);
+    setProgress(100, "Gespeichert");
 
-      setProgress(100, "Gespeichert");
-
-      setTimeout(() => {
-        document.getElementById("overlay").style.display = "none";
-        document.getElementById("form").style.display = "none";
-        document.getElementById("confirm").style.display = "block";
-      }, 400);
-    });
-})
-      .catch(()=>{
-        document.getElementById("overlay").style.display="none";
-        alert("Fehler beim Speichern");
-      });
-
-    },300);
-  },200);
+    setTimeout(() => {
+      showConfirm();
+    }, 400);
+  });
 }
 
 /* HOME */
-function goHome(){
+function goHome() {
   location.href = "index.html?t=" + Date.now();
 }
 
+/* SERVICE WORKER CACHE ENTFERNEN */
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./service-worker.js")
-    .then(() => console.log("Service Worker aktiv"))
+  navigator.serviceWorker.getRegistrations()
+    .then(registrations => {
+      registrations.forEach(registration => registration.unregister());
+    })
     .catch(err => console.error("SW Fehler:", err));
 }
-  
 </script>
 </body>
 </html>
