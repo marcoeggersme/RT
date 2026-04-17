@@ -500,7 +500,22 @@ function save(){
       })
       .then(() => {
   const amount = document.getElementById("einheit").value || 1;
-  const note = "Reittherapie " + document.getElementById("datum").value;
+  
+  const klient = document.getElementById("klient").value || "";
+  const datumRaw = document.getElementById("datum").value || "";
+  const einheit = document.getElementById("einheit").value || "1";
+  
+  // Datum formatieren (dd.mm.yyyy)
+  let datum = datumRaw;
+  if (datumRaw) {
+    const d = new Date(datumRaw);
+    datum = d.toLocaleDateString("de-DE");
+  }
+  
+  // Kontext bauen
+  const note = `RT | ${klient} | ${datum} | ${einheit} EH`;
+  const safeNote = note.substring(0, 120);
+  return buildPayPalQRUrl(amount, safeNote);
 
   setProgress(85, "PayPal-Code wird erzeugt...");
 
