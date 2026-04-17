@@ -264,7 +264,8 @@ canvas{
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbygCPZu8QXB-fPgTwvPV02QMRZbC_Jb5XHfDTCRjKfOOFSnWZUD1MMiBMikAQcJuwZFmw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbw8GzMLkyyN3-Bv2vfTGHPeJmc2VRUIHW_-TIncxG1xbzBNfENvPaOv5G8BsY5AYG5d4Q/exec";
+const PAYPAL_EMAIL = "daniela.schroeder.2003@gmail.com";
 const CACHE_NAME = "reittherapie-static-v2";
 
 // === OFFLINE QUEUE ===
@@ -425,30 +426,9 @@ function loadDropdowns(){
 }
 
 /* QR GENERATOR */
-function buildPayPalQRUrl(amount, note) {
-  const url =
-    API_URL +
-    "?action=getPayPalQr" +
-    "&amount=" + encodeURIComponent(amount) +
-    "&note=" + encodeURIComponent(note) +
-    "&t=" + Date.now();
-
-  return fetch(url, {
-    method: "GET",
-    cache: "no-store"
-  })
-  .then(response => {
-    if (!response.ok) {
-      throw new Error("HTTP Status " + response.status);
-    }
-    return response.json();
-  })
-  .then(data => {
-    if (!data || data.status !== "ok" || !data.qrUrl) {
-      throw new Error("Ungültige PayPal-Antwort");
-    }
-    return data;
-  });
+function buildPayPalQR(amount, note){
+  const link = `https://www.paypal.me/${PAYPAL_EMAIL}/${amount}?note=${encodeURIComponent(note)}`;
+  return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(link)}`;
 }
 
 /* PROGRESS */
@@ -498,36 +478,20 @@ function save(){
         signature
       })
       })
-      .then(() => {
-  const amount = document.getElementById("einheit").value || 1;
-  const note = "Reittherapie " + document.getElementById("datum").value;
+      .then(()=>{
+        // Erfolg wird angenommen (GAS bestätigt nicht aktiv)
+        const amount = document.getElementById("einheit").value || 1;
+        const note = "Reittherapie " + document.getElementById("datum").value;
 
-  setProgress(85, "PayPal-Code wird erzeugt...");
+        document.getElementById("paypalQR").src = buildPayPalQR(amount, note);
 
-    return buildPayPalQRUrl(amount, note)
-      .then(paypalData => {
-        document.getElementById("paypalQR").src = paypalData.qrUrl;
-  
-        setProgress(100, "Fertig");
-  
-        setTimeout(() => {
-          document.getElementById("overlay").style.display = "none";
-          document.getElementById("form").style.display = "none";
-          document.getElementById("confirm").style.display = "block";
-        }, 400);
-      })
-      .catch(err => {
-        console.error("PayPal Fehler:", err);
-  
-        setProgress(100, "Gespeichert");
-  
-        setTimeout(() => {
-          document.getElementById("overlay").style.display = "none";
-          document.getElementById("form").style.display = "none";
-          document.getElementById("confirm").style.display = "block";
-        }, 400);
-      });
-  })
+        setProgress(100,"Fertig");
+
+        setTimeout(()=>{
+          document.getElementById("overlay").style.display="none";
+          document.getElementById("form").style.display="none";
+          document.getElementById("confirm").style.display="block";
+        },400);
       })
       .catch(()=>{
         document.getElementById("overlay").style.display="none";
