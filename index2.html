@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Leistungen Übersicht</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f6f8;
+}
+
+.header {
+    background: #b7e4c7;
+    padding: 15px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.container {
+    padding: 10px;
+}
+
+select, input, button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 8px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+
+button {
+    background: #52b788;
+    color: white;
+    border: none;
+    font-weight: bold;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 12px;
+    margin-top: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.top {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+}
+
+.status-offen {
+    color: #e67e22;
+}
+
+.status-abgerechnet {
+    color: #2ecc71;
+}
+
+.leistung {
+    margin-top: 5px;
+    font-size: 15px;
+}
+
+.meta {
+    margin-top: 5px;
+    font-size: 13px;
+    color: #555;
+}
+</style>
+
+</head>
+<body>
+
+<div class="header">Leistungen Übersicht</div>
+
+<div class="container">
+
+    <select id="klient"></select>
+
+    <input type="date" id="von">
+    <input type="date" id="bis">
+
+    <select id="status">
+        <option value="alle">Alle</option>
+        <option value="offen">Offen</option>
+        <option value="abgerechnet">Abgerechnet</option>
+    </select>
+
+    <button onclick="loadLeistungen()">Anzeigen</button>
+
+    <div id="liste"></div>
+
+</div>
+
+<script>
+const BASE_URL = "https://script.google.com/macros/s/AKfycbxdoJ0GgcYlAtJcBUdvl7RncmrW32oYaDTuUxD8TWM7Z19QiFJAoKRW3Hj62oS6GIcgQw/exec";
+
+async function loadKlienten() {
+    try {
+        const res = await fetch(BASE_URL + "?action=getKlienten");
+        const data = await res.json();
+
+        const sel = document.getElementById("klient");
+        sel.innerHTML = "";
+
+        data.forEach(k => {
+            const opt = document.createElement("option");
+            opt.value = k;
+            opt.textContent = k;
+            sel.appendChild(opt);
+        });
+
+    } catch (err) {
+        alert("Fehler beim Laden der Klienten");
+        console.error(err);
+    }
+}
+
+async function loadLeistungen() {
+
+    const klient = document.getElementById("klient").value;
+    const von = document.getElementById("von").value;
+    const bis = document.getElementById("bis").value;
+    const status = document.getElementById("status").value;
+
+    const url = `${BASE_URL}?action=getLeistungen&klient=${encodeURIComponent(klient)}&von=${von}&bis=${bis}&status=${status}`;
+
+    try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        const liste = document.getElementById("liste");
+        liste.innerHTML = "";
+
+        if (data.length === 0) {
+            liste.innerHTML = "<div style='padding:10px;'>Keine Daten gefunden</div>";
+            return;
+        }
+
+        data.forEach(item => {
+
+            const div = document.createElement("div");
+            div.className = "card";
+
+            div.innerHTML = `
+                <div class="top">
+                    <span>${item.datum} (${item.wochentag})</span>
+                    <span class="status-${item.status}">${item.status}</span>
+                </div>
+
+                <div class="leistung">${item.leistung}</div>
+
+                <div class="meta">
+                    ${item.reNr ? "ReNr: " + item.reNr : ""}
+                    ${item.reDatum ? "<br>ReDatum: " + item.reDatum : ""}
+                </div>
+            `;
+
+            liste.appendChild(div);
+        });
+
+    } catch (err) {
+        alert("Fehler beim Laden der Leistungen");
+        console.error(err);
+    }
+}
+
+function setDefaultDates() {
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("von").value = today;
+    document.getElementById("bis").value = today;
+}
+
+window.onload = () => {
+    loadKlienten();
+    setDefaultDates();
+};
+</script>
+
+</body>
+</html>
