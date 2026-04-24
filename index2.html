@@ -100,7 +100,7 @@ button {
 </div>
 
 <script>
-const BASE_URL = "https://script.google.com/macros/s/AKfycbxp3X_d2juPhPcpHBywq2wg58EB6Qje4ZwjJnT8c_R3tP6tmRyVNmSAqDXX01auHjK1/exec";
+const BASE_URL = "https://script.google.com/macros/s/AKfycbxEjS6lQWNK6J-_cEzPody36Z0TbScjDPglWKTrqs3VWAl2DP_aMnMhtNccXflLYejfjw/exec";
 
 async function loadKlienten() {
     try {
@@ -124,13 +124,18 @@ async function loadKlienten() {
 }
 
 async function loadLeistungen() {
-
+    const leistung = document.getElementById("leistung").value;
     const klient = document.getElementById("klient").value;
     const von = document.getElementById("von").value;
     const bis = document.getElementById("bis").value;
     const status = document.getElementById("status").value;
 
-    const url = `${BASE_URL}?action=getLeistungen&klient=${encodeURIComponent(klient)}&von=${von}&bis=${bis}&status=${status}`;
+    const url = `${BASE_URL}?action=getLeistungen
+        &klient=${encodeURIComponent(klient)}
+        &leistung=${encodeURIComponent(leistung)}
+        &von=${von}
+        &bis=${bis}
+        &status=${status}`;
 
     try {
         const res = await fetch(url);
