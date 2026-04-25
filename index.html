@@ -354,6 +354,13 @@ function setProgress(percent, text) {
 }
 
 function showConfirm() {
+  const qrImg = document.getElementById("paypalQR");
+
+  // Falls noch kein QR gesetzt wurde → Default anzeigen
+  if (!qrImg.src || qrImg.src === window.location.href) {
+    qrImg.src = "./icon-192.png";
+  }
+
   document.getElementById("overlay").style.display = "none";
   document.getElementById("form").style.display = "none";
   document.getElementById("confirm").style.display = "block";
