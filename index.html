@@ -467,42 +467,35 @@ function save() {
     signature: signature
   };
 
-  const safeNote = buildPayPalNote();
-
   setProgress(70, "Übertragung läuft...");
 
   fetch(API_URL + "?t=" + Date.now(), {
-  method: "POST",
-  cache: "no-store",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify(payload)
-})
-.then(res => res.json())
-.then(data => {
+    method: "POST",
+    cache: "no-store",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(data => {
 
-  console.log(data); // DEBUG
+    console.log("SERVER RESPONSE:", data);
 
-  setProgress(85, "PayPal-Code wird erzeugt...");
+    setProgress(85, "PayPal-Code wird erzeugt...");
 
-  if (data.paypalQR) {
-    document.getElementById("paypalQR").src = data.paypalQR;
-  }
+    if (data.paypalQR) {
+      document.getElementById("paypalQR").src = data.paypalQR;
+    }
 
-  setProgress(100, "Fertig");
-
-  setTimeout(() => {
-    showConfirm();
-  }, 400);
-})
+    setProgress(100, "Fertig");
 
     setTimeout(() => {
       showConfirm();
     }, 400);
   })
   .catch(err => {
-    console.error("Speicher-/PayPal-Fehler:", err);
+    console.error("Fehler:", err);
 
     setProgress(100, "Gespeichert");
 
@@ -511,7 +504,6 @@ function save() {
     }, 400);
   });
 }
-
 /* HOME */
 function goHome() {
   location.href = "index.html?t=" + Date.now();
