@@ -449,6 +449,7 @@ function save() {
   setProgress(10, "Daten werden vorbereitet...");
 
   let signature = null;
+
   if (hasSignature) {
     setProgress(40, "Signatur wird verarbeitet...");
     signature = canvas.toDataURL("image/png");
@@ -470,48 +471,36 @@ function save() {
   setProgress(70, "Übertragung läuft...");
 
   fetch(API_URL, {
-  method: "POST",
-  headers: {
-    "Content-Type": "text/plain;charset=utf-8"
-  },
-  body: JSON.stringify(payload)
-})
-.then(response => response.text())
-.then(text => {
+    method: "POST",
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8"
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(response => response.text())
+  .then(text => {
+    console.log("RAW RESPONSE:", text);
 
-  console.log("RAW RESPONSE:", text);
+    let data;
 
-  let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      throw new Error("Antwort ist kein JSON: " + text);
+    }
 
-  try {
-    data = JSON.parse(text);
-  } catch (e) {
-    throw new Error("Antwort ist kein JSON: " + text);
-  }
+    console.log("PARSED:", data);
 
-  console.log("PARSED:", data);
+    if (data.status !== "ok") {
+      throw new Error(data.message || "Speichern fehlgeschlagen");
+    }
 
-  setProgress(85, "PayPal-Code wird erzeugt...");
+    setProgress(85, "PayPal-Code wird erzeugt...");
 
-  if (data.paypalQR) {
-    document.getElementById("paypalQR").src = data.paypalQR;
-  }
+    if (data.paypalQR) {
+      document.getElementById("paypalQR").src = data.paypalQR;
+    }
 
-  setProgress(100, "Fertig");
-
-  setTimeout(() => {
-    showConfirm();
-  }, 400);
-})
-.catch(err => {
-  console.error("Fehler:", err);
-
-  setProgress(100, "Gespeichert");
-
-  setTimeout(() => {
-    showConfirm();
-  }, 400);
-});
     setProgress(100, "Fertig");
 
     setTimeout(() => {
@@ -521,10 +510,11 @@ function save() {
   .catch(err => {
     console.error("Fehler:", err);
 
-    setProgress(100, "Gespeichert");
+    setProgress(100, "Fehler beim Speichern");
 
     setTimeout(() => {
-      showConfirm();
+      document.getElementById("overlay").style.display = "none";
+      alert("Fehler beim Speichern: " + err.message);
     }, 400);
   });
 }
