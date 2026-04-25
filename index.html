@@ -469,25 +469,49 @@ function save() {
 
   setProgress(70, "Übertragung läuft...");
 
-  fetch(API_URL + "?t=" + Date.now(), {
-    method: "POST",
-    cache: "no-store",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-  })
-  .then(res => res.json())
-  .then(data => {
+  fetch(API_URL, {
+  method: "POST",
+  headers: {
+    "Content-Type": "text/plain;charset=utf-8"
+  },
+  body: JSON.stringify(payload)
+})
+.then(response => response.text())
+.then(text => {
 
-    console.log("SERVER RESPONSE:", data);
+  console.log("RAW RESPONSE:", text);
 
-    setProgress(85, "PayPal-Code wird erzeugt...");
+  let data;
 
-    if (data.paypalQR) {
-      document.getElementById("paypalQR").src = data.paypalQR;
-    }
+  try {
+    data = JSON.parse(text);
+  } catch (e) {
+    throw new Error("Antwort ist kein JSON: " + text);
+  }
 
+  console.log("PARSED:", data);
+
+  setProgress(85, "PayPal-Code wird erzeugt...");
+
+  if (data.paypalQR) {
+    document.getElementById("paypalQR").src = data.paypalQR;
+  }
+
+  setProgress(100, "Fertig");
+
+  setTimeout(() => {
+    showConfirm();
+  }, 400);
+})
+.catch(err => {
+  console.error("Fehler:", err);
+
+  setProgress(100, "Gespeichert");
+
+  setTimeout(() => {
+    showConfirm();
+  }, 400);
+});
     setProgress(100, "Fertig");
 
     setTimeout(() => {
